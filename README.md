@@ -1,308 +1,128 @@
-# 🏔️ AI-Based Rockfall Prediction System
-
-## Smart India Hackathon - Mining Safety Innovation Project
+# 🏔️ AI-Based Rockfall Risk Prediction System  
+### Smart India Hackathon (SIH) – Mining Safety Innovation Project
 
 [![Python](https://img.shields.io/badge/Python-3.8%2B-blue)](https://python.org)
-[![Flask](https://img.shields.io/badge/Flask-2.3.3-green)](https://flask.palletsprojects.com)
-[![XGBoost](https://img.shields.io/badge/XGBoost-1.7.6-orange)](https://xgboost.readthedocs.io)
+[![LightGBM](https://img.shields.io/badge/LightGBM-ML-green)](https://lightgbm.readthedocs.io)
+[![Flask](https://img.shields.io/badge/Flask-Web_App-orange)](https://flask.palletsprojects.com)
+[![Status](https://img.shields.io/badge/Status-Production_Ready-brightgreen)](#)
 [![License](https://img.shields.io/badge/License-SIH_2024-red)](LICENSE)
-[![Status](https://img.shields.io/badge/Status-Production_Ready-brightgreen)](https://github.com)
 
-**A comprehensive AI-powered web dashboard system for predicting and monitoring rockfall risks across major Indian open-pit mines using advanced ML models, Explainable AI (XAI), real-time data integration, multilingual alerts, and secure user authentication.**
-
----
-
-## 🌟 Key Innovations & Features
-
-### ✨ **Explainable AI (XAI) - Revolutionary Transparency**
-- **WHY Analysis**: Operators see exactly WHY there's high risk, not just that risk exists
-- **Sensor-Level Explanations**: "Critical vibration at 8.2Hz (exceeds 7.5 threshold)"
-- **AI Recommendations**: "Inspect vibration sensors, stop Excavator-01, evacuate Block A"
-- **Confidence Scoring**: System reliability assessment (0-100%)
-
-### 🌐 **Multilingual Alert System**
-- **8 Regional Languages**: Hindi, English, Bengali, Odia, Gujarati, Marathi, Kannada, Telugu
-- **Area-Based Selection**: Automatically selects languages based on mine location
-- **Technical Translations**: Sensor readings explained in local languages
-
-### 🗺️ **Comprehensive Indian Mining Database**
-- **18 Major Open-Pit Mines** across 11 states
-- **Real GPS Coordinates** and detailed mine information
-- **Live Risk Monitoring** with color-coded indicators
-
-### 🚨 **Advanced Alert System**
-- **Multi-Channel Alerts**: Email, SMS, and dashboard notifications
-- **Risk-Level Routing**: Different actions for HIGH/MEDIUM/LOW risk
-- **Rich Notifications**: Detailed explanations and recommended actions
-
-### 🔐 **Enterprise Security**
-- **Role-Based Access Control**: Admin, Supervisor, Operator, Emergency roles
-- **Secure Authentication**: Modern login/signup system
-- **Session Management**: Secure session handling with remember-me functionality
+**An AI-driven rockfall risk prediction and monitoring system for open-pit and underground mines, combining machine learning, multisource geospatial data, and explainable risk insights to enhance mining safety.**
 
 ---
 
-## 🚀 Quick Start
+## 🌟 Project Overview
 
-### 1. **Clone & Navigate**
-```bash
-git clone <repository-url>
-cd SIH_PROJECT
-```
+Rockfall incidents pose a serious threat to worker safety, equipment, and productivity in mining operations. This project delivers a **data-driven, scalable, and interpretable solution** for predicting rockfall risk using **machine learning** and **multisource environmental data**.
 
-### 2. **Install Dependencies**
-```bash
-cd web_app
-pip install -r requirements.txt
-```
-
-### 3. **Run the Application**
-```bash
-python app_with_auth.py
-```
-
-### 4. **Access Dashboard**
-Open your browser to: **http://localhost:5000**
-
-### 5. **Demo Login Credentials**
-- **Admin**: `admin_demo` / `Admin@2024`
-- **Supervisor**: `supervisor_demo` / `Super@2024`
-- **Operator**: `operator_demo` / `Oper@2024`
-- **Emergency**: `emergency_demo` / `Emerg@2024`
+At its core, the system uses a **LightGBM multiclass classification model** to categorize rockfall risk into **LOW, MEDIUM, and HIGH** levels. The model is trained on a rich feature set derived from terrain, seismic activity, rainfall patterns, geotechnical sensors, drone-based surface analysis, and temporal factors. The final model was selected after evaluating multiple ML and DL models using **macro F1-score, cross-validation, and statistical testing**.
 
 ---
 
-## 📊 Project Architecture
+## 🤖 AI / ML Pipeline (Latest)
 
-```
+- **Final Model**: LightGBM (best macro F1-score)
+- **Classes**: LOW / MEDIUM / HIGH risk
+- **Preprocessing**:
+  - Missing value handling  
+  - StandardScaler normalization  
+  - Statistical feature selection (ANOVA F-test)  
+  - Recursive Feature Elimination with CV (RFECV)
+- **Class Imbalance Handling**: SMOTE (applied only on training data)
+- **Evaluation Metrics**: Accuracy, Precision, Recall, Macro F1, ROC-AUC
+- **Model Selection Validation**: Friedman statistical test
+
+The trained **LightGBM model**, **scaler**, and **selected feature list** are saved and reused during inference to ensure consistent and reliable predictions.
+
+---
+
+## 📊 Data Sources & Features
+
+The system integrates **50+ engineered features**, including:
+
+- **Terrain & Geospatial**: elevation, slope, aspect, latitude, longitude  
+- **Seismic Indicators**: magnitude, depth, vibration, RMS, error metrics  
+- **Rainfall**: monthly, seasonal, and annual precipitation  
+- **Geotechnical Sensors**: displacement, strain, pore pressure  
+- **Drone-Derived Indicators**: crack density, debris texture, vegetation ratio  
+- **Remote Sensing (SAR-ready)**: displacement velocity, coherence, deformation rate  
+- **Temporal Factors**: season, month, year  
+
+---
+
+## 🧠 Prediction & Interpretability
+
+During inference, the system:
+- Uses **LightGBM `predict_proba()`** for probabilistic risk scoring
+- Outputs:
+  - Risk level (LOW / MEDIUM / HIGH)
+  - Risk probability score
+  - Confidence value
+  - Key contributing factors
+  - Timestamp
+- Supports **Explainable AI (XAI)** extensions (SHAP-ready) for feature-level interpretation
+
+A **fallback geological risk logic** is included to ensure graceful degradation if the trained model is unavailable.
+
+---
+
+## 🌐 Web Application
+
+- **Backend**: Flask  
+- **Dashboard**: Interactive mine-wise risk visualization  
+- **Security**: Role-based authentication (Admin, Supervisor, Operator, Emergency)  
+- **Alerts**: Risk-level-aware notifications (extensible to email/SMS)  
+- **Scalable Design**: Suitable for APIs, dashboards, or decision-support systems  
+
+---
 SIH_PROJECT/
-├── 📁 web_app/                    # Main Web Application
-│   ├── 🔐 app_with_auth.py       # Flask app with authentication
-│   ├── 🤖 prediction_service.py  # AI/ML prediction engine
-│   ├── 📊 data_service.py        # Indian mines database
-│   ├── 🚨 alert_service.py       # Multilingual alert system
-│   ├── ✨ risk_explainer.py      # XAI explanation engine
-│   └── 🌐 templates/             # Web interface
-├── 📁 scripts/                   # Data Analysis & ML Models
-│   ├── 📓 notebooks/             # Jupyter analysis notebooks
-│   ├── 🤖 models/                # Trained ML models
-│   └── 📊 datasets/              # Training and analysis data
-├── 📁 documentation/             # Comprehensive documentation
-│   ├── 📋 FINAL_PROJECT_DOCUMENTATION.md
-│   ├── 🏗️ TECHNICAL_ARCHITECTURE.md
-│   ├── 📖 COMPREHENSIVE_USER_GUIDE.md
-│   └── 📊 PROJECT_OVERVIEW.md
-└── 📄 README.md                  # This file
-```
+├── web_app/ # Flask web application
+│ ├── app_with_auth.py
+│ ├── prediction_service.py
+│ ├── risk_explainer.py
+│ └── templates/
+├── scripts/ # Data analysis & model training
+│ ├── notebooks/
+│ ├── datasets/
+│ └── model_training.py
+├── output/ # Saved artifacts
+│ ├── best_rockfall_model.joblib
+│ ├── scaler.joblib
+│ └── selected_features.pkl
+├── documentation/
+└── README.md
 
 ---
 
-## 🏗️ System Components
+## 📈 Impact & Use Cases
 
-### 🤖 **AI/ML Engine**
-- **XGBoost Model**: Primary prediction model (94.2% accuracy)
-- **Random Forest**: Fallback prediction model
-- **Feature Engineering**: 50+ engineered features from multi-source data
-- **Risk Classification**: Automated LOW/MEDIUM/HIGH categorization
-
-### 📊 **Data Integration**
-- **DEM Analysis**: Terrain and elevation modeling
-- **Seismic Monitoring**: Earthquake and vibration data
-- **Weather Integration**: Rainfall and seasonal patterns
-- **Drone Analysis**: Surface crack detection and vegetation mapping
-- **Geotechnical Sensors**: Ground displacement and stability monitoring
-
-### 🌐 **Web Dashboard**
-- **Interactive Map**: Real-time mine locations and risk indicators
-- **Live Analytics**: Charts, trends, and statistical analysis
-- **User Management**: Secure authentication and role-based access
-- **Responsive Design**: Works on desktop, tablet, and mobile
+- Early warning system for **rockfall-prone zones**
+- Decision support for **mine safety officers**
+- Risk-aware **operational planning**
+- Research platform for **AI in mining safety**
 
 ---
 
-## 📋 Documentation Navigation
+## 📂 Dataset
 
-| Document | Purpose | Target Audience |
-|----------|---------|-----------------|
-| [**📋 FINAL_PROJECT_DOCUMENTATION.md**](FINAL_PROJECT_DOCUMENTATION.md) | Complete project overview with all features and capabilities | All stakeholders |
-| [**🏗️ TECHNICAL_ARCHITECTURE.md**](TECHNICAL_ARCHITECTURE.md) | Detailed technical specifications and system design | Developers, Technical teams |
-| [**📖 COMPREHENSIVE_USER_GUIDE.md**](COMPREHENSIVE_USER_GUIDE.md) | Step-by-step installation, configuration, and usage guide | End users, System administrators |
-| [**📊 PROJECT_OVERVIEW.md**](PROJECT_OVERVIEW.md) | Executive summary and key achievements | Management, Stakeholders |
-| [**web_app/README.md**](web_app/README.md) | Web application specific documentation | Developers |
+Dataset used for training and evaluation:  
+**https://drive.google.com/drive/folders/1rpohGmnZ4MsZd-Gxtwc3yrewVzRVGI87**
 
 ---
 
-## 🌍 Indian Mining Sites Coverage
+## 🏆 Smart India Hackathon 2024
 
-| State | Mines | Primary Resources | Coverage |
-|-------|--------|-------------------|----------|
-| **Jharkhand** | 3 | Coal | Jharia, Bokaro, Rajmahal |
-| **Odisha** | 3 | Iron Ore, Coal | Keonjhar, Barbil, Talcher |
-| **Chhattisgarh** | 2 | Coal | Korba, Raigarh |
-| **Rajasthan** | 2 | Lead-Zinc | Zawar, Rampura Agucha |
-| **Others** | 8 | Various | Gujarat, West Bengal, Maharashtra, Karnataka, Telangana, Andhra Pradesh, Madhya Pradesh |
-
-**Total: 18 Major Open-Pit Mines across 11 Indian States**
+This project was developed as part of **Smart India Hackathon 2024**, focusing on **AI-driven mining safety solutions** with emphasis on reliability, interpretability, and real-world deployment readiness.
 
 ---
 
-## ⚡ Key Performance Metrics
+## 📄 License
 
-### 🎯 **AI Model Performance**
-- **XGBoost Accuracy**: 94.2% (Training), 91.8% (Validation)
-- **Prediction Speed**: <200ms per mine
-- **Feature Count**: 50+ engineered features
-- **Confidence Scoring**: Real-time reliability assessment
-
-### 🚀 **System Performance**
-- **Dashboard Load Time**: <3 seconds
-- **Real-Time Updates**: Every 30 seconds
-- **Concurrent Users**: Up to 100 simultaneous users
-- **System Uptime**: 99.5% target availability
-
-### 🔒 **Security Features**
-- **Multi-Role Authentication**: 4 user roles with granular permissions
-- **Session Security**: Secure session management with timeout
-- **Data Protection**: Encrypted credentials and secure API endpoints
-- **Audit Logging**: Complete user action tracking
+Developed under **Smart India Hackathon (SIH) 2024** guidelines for academic and innovation purposes.
 
 ---
 
-## 🧪 Testing & Quality Assurance
+**Built for safer mines using Machine Learning and Explainable AI**
 
-### ✅ **Comprehensive Testing Suite**
-```bash
-# Run all system tests
-cd web_app
-python test_system.py
+## 📁 Project Structure
 
-# Test XAI functionality
-python test_xai_alerts.py
-
-# Test multilingual alerts
-python test_multilingual_sms.py
-```
-
-### 🎯 **Test Coverage**
-- ✅ Authentication system
-- ✅ ML model integration
-- ✅ Alert system functionality
-- ✅ XAI explanation generation
-- ✅ Multilingual support
-- ✅ Database operations
-- ✅ API endpoint security
-
----
-
-## 🛠️ Configuration
-
-### 📧 **Email Alerts**
-```env
-EMAIL_USER=your_email@gmail.com
-EMAIL_PASSWORD=your_app_password
-SMTP_SERVER=smtp.gmail.com
-SMTP_PORT=587
-```
-
-### 📱 **SMS Alerts (Twilio)**
-```env
-TWILIO_SID=your_twilio_account_sid
-TWILIO_TOKEN=your_twilio_auth_token
-TWILIO_PHONE=your_twilio_phone_number
-```
-
-### ⚙️ **System Settings**
-```env
-HIGH_RISK_THRESHOLD=0.7
-MEDIUM_RISK_THRESHOLD=0.4
-XAI_ENABLED=true
-MULTILINGUAL_ENABLED=true
-```
-
----
-
-## 🎯 Impact & Benefits
-
-### 🚀 **Operational Excellence**
-- **40% Faster Response**: Clear explanations enable quicker decision-making
-- **85% Better Understanding**: Operators report clearer risk comprehension
-- **60% Reduced False Dismissals**: Fewer ignored alerts due to better explanations
-- **95% Language Accessibility**: Multi-language support for diverse workforce
-
-### 💡 **Innovation Achievements**
-1. **First XAI System for Mining**: Transparent AI decision-making in mining safety
-2. **Comprehensive Indian Mining Database**: 18 major mines with real coordinates
-3. **Multilingual Technical Communication**: 8 regional languages for safety alerts
-4. **Real-Time Risk Explanation**: Instant sensor-level analysis and recommendations
-
----
-
-## 🏆 Awards & Recognition
-
-**Smart India Hackathon 2024 - Mining Safety Innovation**
-- ✨ **Explainable AI Implementation**: Revolutionary transparency in mining risk prediction
-- 🌐 **Multilingual Accessibility**: First system to support 8+ Indian regional languages
-- 🎯 **Comprehensive Coverage**: Complete database of Indian open-pit mining operations
-- 🔐 **Enterprise Security**: Production-ready authentication and access control
-
----
-
-## 🤝 Contributing
-
-We welcome contributions from the mining safety, AI/ML, and web development communities:
-
-1. **Fork** the repository
-2. **Create** a feature branch
-3. **Implement** your enhancement
-4. **Test** thoroughly
-5. **Submit** a pull request
-
-See our [Contributing Guidelines](CONTRIBUTING.md) for detailed information.
-
----
-
-## 📞 Support & Contact
-
-### 🆘 **Technical Support**
-- Check the [Comprehensive User Guide](COMPREHENSIVE_USER_GUIDE.md)
-- Review the [Technical Architecture](TECHNICAL_ARCHITECTURE.md)
-- Run the built-in test suite
-
-### 📧 **Project Inquiries**
-- **Mining Safety Experts**: For operational guidance and safety protocols
-- **AI/ML Researchers**: For model improvements and feature engineering
-- **Government Officials**: For integration with national mining databases
-
----
-
-## 📄 License & Credits
-
-### 📜 **License**
-This project is developed for the **Smart India Hackathon (SIH) 2024** initiative to improve mining safety through AI-powered risk prediction systems.
-
-### 🙏 **Acknowledgments**
-- **Smart India Hackathon** organizing committee
-- **Indian Bureau of Mines** for data sources and guidance
-- **Mining industry experts** for domain knowledge
-- **Open-source community** for frameworks and libraries
-
----
-
-## 🌟 Project Status
-
-**🎉 PRODUCTION READY** - The system is fully functional and ready for deployment in real mining operations.
-
-**📊 Current Capabilities:**
-- ✅ 18 mines monitored in real-time
-- ✅ XAI explanations for all predictions  
-- ✅ 8+ languages supported
-- ✅ Secure multi-role authentication
-- ✅ Comprehensive testing suite
-- ✅ Complete documentation
-
-**🚀 Access the Dashboard:** `http://localhost:5000` (when running locally)
-dataset link-**https://drive.google.com/drive/folders/1rpohGmnZ4MsZd-Gxtwc3yrewVzRVGI87?usp=drive_link**
----
-
-
-**Built with ❤️ for Indian Mining Safety | Smart India Hackathon 2024**
