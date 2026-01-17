@@ -76,21 +76,55 @@ A **fallback geological risk logic** is included to ensure graceful degradation 
 
 ---
 SIH_PROJECT/
-├── web_app/ # Flask web application
-│ ├── app_with_auth.py
-│ ├── prediction_service.py
-│ ├── risk_explainer.py
-│ └── templates/
-├── scripts/ # Data analysis & model training
-│ ├── notebooks/
-│ ├── datasets/
-│ └── model_training.py
-├── output/ # Saved artifacts
-│ ├── best_rockfall_model.joblib
-│ ├── scaler.joblib
-│ └── selected_features.pkl
-├── documentation/
-└── README.md
+│
+├── README.md                         # Project overview and setup guide
+├── LICENSE                           # Project license (SIH 2024)
+│
+├── output/                           # Saved ML artifacts
+│   ├── best_rockfall_model.joblib    # Trained LightGBM model
+│   ├── scaler.joblib                 # Feature scaler
+│   └── selected_features.pkl        # Final selected feature list
+│
+├── scripts/                          # Data analysis & model development
+│   │
+│   ├── notebooks/                   # Jupyter notebooks (EDA, experiments)
+│   │   ├── eda_analysis.ipynb
+│   │   ├── feature_selection.ipynb
+│   │   └── model_comparison.ipynb
+│   │
+│   ├── datasets/                    # Training & evaluation datasets
+│   │   └── dataset_balanced_risk_final.csv
+│   │
+│   └── model_training.py            # End-to-end ML training pipeline
+│
+├── web_app/                          # Flask web application
+│   │
+│   ├── app_with_auth.py             # Main Flask app with authentication
+│   ├── prediction_service.py        # Rockfall prediction logic
+│   ├── risk_explainer.py            # Explainable AI (XAI) module
+│   ├── alert_service.py             # Risk alert handling
+│   ├── data_service.py              # Mine & region data management
+│   │
+│   ├── templates/                   # HTML templates
+│   │   ├── login.html
+│   │   ├── dashboard.html
+│   │   └── results.html
+│   │
+│   ├── static/                      # CSS, JS, images
+│   │   ├── css/
+│   │   ├── js/
+│   │   └── images/
+│   │
+│   └── requirements.txt             # Web app dependencies
+│
+├── documentation/                   # Project documentation
+│   ├── FINAL_PROJECT_DOCUMENTATION.md
+│   ├── TECHNICAL_ARCHITECTURE.md
+│   ├── COMPREHENSIVE_USER_GUIDE.md
+│   └── PROJECT_OVERVIEW.md
+│
+└── .gitignore                        # Git ignored files
+
 
 ---
 
@@ -125,4 +159,5 @@ Developed under **Smart India Hackathon (SIH) 2024** guidelines for academic and
 **Built for safer mines using Machine Learning and Explainable AI**
 
 ## 📁 Project Structure
+
 
