@@ -64,21 +64,11 @@ During inference, the system:
 
 A **fallback geological risk logic** is included to ensure graceful degradation if the trained model is unavailable.
 
----
-
-## 🌐 Web Application
-
-- **Backend**: Flask  
-- **Dashboard**: Interactive mine-wise risk visualization  
-- **Security**: Role-based authentication (Admin, Supervisor, Operator, Emergency)  
-- **Alerts**: Risk-level-aware notifications (extensible to email/SMS)  
-- **Scalable Design**: Suitable for APIs, dashboards, or decision-support systems  
-
----
 SIH_PROJECT/
 │
 ├── README.md                         # Project overview and setup guide
 ├── LICENSE                           # Project license (SIH 2024)
+├── .gitignore                        # Git ignored files
 │
 ├── output/                           # Saved ML artifacts
 │   ├── best_rockfall_model.joblib    # Trained LightGBM model
@@ -110,20 +100,19 @@ SIH_PROJECT/
 │   │   ├── dashboard.html
 │   │   └── results.html
 │   │
-│   ├── static/                      # CSS, JS, images
+│   ├── static/                      # Static assets
 │   │   ├── css/
 │   │   ├── js/
 │   │   └── images/
 │   │
-│   └── requirements.txt             # Web app dependencies
+│   └── requirements.txt             # Web application dependencies
 │
-├── documentation/                   # Project documentation
-│   ├── FINAL_PROJECT_DOCUMENTATION.md
-│   ├── TECHNICAL_ARCHITECTURE.md
-│   ├── COMPREHENSIVE_USER_GUIDE.md
-│   └── PROJECT_OVERVIEW.md
-│
-└── .gitignore                        # Git ignored files
+└── documentation/                   # Project documentation
+    ├── FINAL_PROJECT_DOCUMENTATION.md
+    ├── TECHNICAL_ARCHITECTURE.md
+    ├── COMPREHENSIVE_USER_GUIDE.md
+    └── PROJECT_OVERVIEW.md
+
 
 
 ---
@@ -159,5 +148,6 @@ Developed under **Smart India Hackathon (SIH) 2024** guidelines for academic and
 **Built for safer mines using Machine Learning and Explainable AI**
 
 ## 📁 Project Structure
+
 
 
