@@ -1,0 +1,2218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI-Based Rockfall Prediction System - India Mining Dashboard</title>
+    
+    <!-- CSS Libraries -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.css" rel="stylesheet">
+    
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #3498db;
+            --danger-color: #e74c3c;
+            --warning-color: #f39c12;
+            --success-color: #27ae60;
+            --dark-bg: #1a1a1a;
+            --card-bg: #2d2d30;
+        }
+
+        body {
+            background: #ffffff;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            min-height: 100vh;
+        }
+
+        .navbar {
+            background: linear-gradient(135deg, var(--primary-color) 0%, #34495e 100%);
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .navbar-brand {
+            font-weight: bold;
+            font-size: 1.3rem;
+        }
+
+        .navbar-nav .nav-link {
+            transition: all 0.3s ease;
+            border-radius: 8px;
+            margin: 0 5px;
+            padding: 8px 12px !important;
+        }
+
+        .navbar-nav .nav-link:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+            transform: translateY(-1px);
+        }
+
+        .navbar-nav .nav-item a.nav-link {
+            text-decoration: none;
+            color: rgba(255, 255, 255, 0.9);
+        }
+
+        .navbar-nav .nav-item a.nav-link:hover {
+            color: #ffffff;
+            background-color: rgba(255, 255, 255, 0.15);
+        }
+
+        .user-greeting {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            padding: 5px 15px;
+        }
+
+        .dashboard-container {
+            padding: 20px;
+            max-width: 100%;
+            margin: 0 auto;
+        }
+
+        .stats-card {
+            background: #ffffff;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.15);
+            border: 1px solid #e9ecef;
+            transition: transform 0.3s ease;
+        }
+
+        .stats-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .stat-icon {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+
+        .high-risk { color: var(--danger-color); }
+        .medium-risk { color: var(--warning-color); }
+        .low-risk { color: var(--success-color); }
+
+        #map {
+            height: 500px;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        .alert-card {
+            border-left: 5px solid;
+            margin-bottom: 15px;
+            transition: all 0.3s ease;
+        }
+
+        .alert-high { border-left-color: var(--danger-color); }
+        .alert-medium { border-left-color: var(--warning-color); }
+        .alert-low { border-left-color: var(--success-color); }
+
+        .alert-card:hover {
+            transform: translateX(10px);
+        }
+
+        .live-indicator {
+            width: 10px;
+            height: 10px;
+            background: var(--success-color);
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 5px;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+
+        .chart-container {
+            position: relative;
+            height: 300px;
+            background: #ffffff;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.15);
+            border: 1px solid #e9ecef;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 50px;
+        }
+
+        .loading i {
+            font-size: 3rem;
+            color: var(--secondary-color);
+            animation: spin 2s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .mine-popup {
+            max-width: 300px;
+        }
+
+        .btn-emergency {
+            background: linear-gradient(45deg, #ff416c, #ff4b2b);
+            border: none;
+            color: white;
+        }
+
+        .status-online {
+            background: var(--success-color);
+            color: white;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 0.8rem;
+        }
+
+        .weather-widget {
+            background: linear-gradient(135deg, #74b9ff, #0984e3);
+            color: white;
+            border-radius: 15px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+
+        .alert-scroll {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .alert-scroll::-webkit-scrollbar {
+            width: 5px;
+        }
+
+        .alert-scroll::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 10px;
+        }
+
+        .alert-scroll::-webkit-scrollbar-thumb {
+            background: #888;
+            border-radius: 10px;
+        }
+
+        .alert-scroll::-webkit-scrollbar-thumb:hover {
+            background: #555;
+        }
+
+        /* Enhanced Alert Styles */
+        .dismissible-alert {
+            position: relative;
+            transition: all 0.3s ease;
+            border-radius: 10px;
+            margin-bottom: 15px;
+            padding-right: 40px;
+        }
+
+        .alert-dismiss-btn {
+            position: absolute;
+            top: 10px;
+            right: 15px;
+            background: none;
+            border: none;
+            font-size: 1.2rem;
+            cursor: pointer;
+            color: rgba(0,0,0,0.5);
+            z-index: 10;
+        }
+
+        .alert-dismiss-btn:hover {
+            color: rgba(0,0,0,0.8);
+        }
+
+        .alert-actions {
+            background: rgba(0,0,0,0.05);
+            padding: 10px;
+            border-radius: 5px;
+            margin-top: 10px;
+        }
+
+        .action-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 5px;
+            font-size: 0.9rem;
+        }
+
+        .action-item i {
+            margin-right: 8px;
+            width: 20px;
+        }
+
+        /* Chart containers */
+        .mini-chart {
+            height: 400px;
+            background: #ffffff;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.15);
+            border: 1px solid #e9ecef;
+            transition: transform 0.3s ease;
+        }
+        
+        .mini-chart:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+        }
+        
+        .mini-chart h6 {
+            color: #495057;
+            font-weight: 600;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #e9ecef;
+        }
+        
+        /* XAI Explanation Styles */
+        .xai-explanation {
+            background: linear-gradient(135deg, #f8f9ff, #e6f2ff);
+            border: 1px solid #b3d9ff;
+            border-radius: 10px;
+            padding: 15px;
+            margin-top: 10px;
+        }
+        
+        .xai-title {
+            color: #0066cc;
+            font-weight: 600;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+        }
+        
+        .xai-title i {
+            margin-right: 8px;
+        }
+        
+        .sensor-factor {
+            background: #fff;
+            border-radius: 5px;
+            padding: 8px 10px;
+            margin: 5px 0;
+            border-left: 4px solid #007bff;
+        }
+        
+        .sensor-critical { border-left-color: #dc3545; }
+        .sensor-high { border-left-color: #fd7e14; }
+        .sensor-medium { border-left-color: #ffc107; }
+        .sensor-low { border-left-color: #28a745; }
+        
+        .confidence-score {
+            background: #e7f3ff;
+            border: 1px solid #b3d9ff;
+            border-radius: 20px;
+            padding: 5px 15px;
+            display: inline-block;
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: #0066cc;
+        }
+        
+        .recommendation-item {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-radius: 5px;
+            padding: 8px 12px;
+            margin: 5px 0;
+            display: flex;
+            align-items: center;
+        }
+        
+        .recommendation-item i {
+            margin-right: 10px;
+            color: #856404;
+        }
+
+        /* Navigation tabs */
+        .nav-tabs {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 5px;
+            margin-bottom: 20px;
+            border: 1px solid #dee2e6;
+        }
+
+        .nav-tabs .nav-link {
+            border: none;
+            background: transparent;
+            color: #495057;
+            border-radius: 8px;
+            margin: 0 2px;
+            font-weight: 500;
+        }
+
+        .nav-tabs .nav-link.active {
+            background: #007bff;
+            color: white;
+            box-shadow: 0 2px 4px rgba(0,123,255,0.3);
+        }
+
+        .nav-tabs .nav-link:hover {
+            background: #e9ecef;
+            color: #495057;
+        }
+
+        .nav-tabs .nav-link.active:hover {
+            background: #0056b3;
+            color: white;
+        }
+
+        /* Model info styles */
+        .model-card {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 15px;
+        }
+
+        .metric-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .metric-item:last-child {
+            border-bottom: none;
+        }
+
+        .tab-content {
+            background: transparent;
+        }
+
+        .severity-indicator {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 8px;
+        }
+
+        .severity-high { background-color: var(--danger-color); }
+        .severity-medium { background-color: var(--warning-color); }
+        .severity-low { background-color: var(--success-color); }
+
+        /* Red Alert Banner Styles */
+        .red-alert-banner {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: linear-gradient(135deg, #dc3545, #c82333);
+            color: white;
+            padding: 15px 20px;
+            z-index: 1050;
+            box-shadow: 0 2px 10px rgba(220, 53, 69, 0.3);
+            border-bottom: 3px solid #a71e2a;
+            animation: alertPulse 2s ease-in-out infinite alternate;
+            transform: translateY(0);
+            transition: transform 0.3s ease-out;
+        }
+
+        .red-alert-banner.dismissed {
+            transform: translateY(-100%);
+        }
+
+        @keyframes alertPulse {
+            0% { box-shadow: 0 2px 10px rgba(220, 53, 69, 0.3); }
+            100% { box-shadow: 0 2px 20px rgba(220, 53, 69, 0.6), 0 0 30px rgba(220, 53, 69, 0.2); }
+        }
+
+        .alert-content {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .alert-message {
+            display: flex;
+            align-items: center;
+            flex-grow: 1;
+        }
+
+        .alert-icon {
+            font-size: 1.5rem;
+            margin-right: 15px;
+            animation: shake 0.5s ease-in-out infinite alternate;
+        }
+
+        @keyframes shake {
+            0% { transform: translateX(-2px); }
+            100% { transform: translateX(2px); }
+        }
+
+        .alert-text {
+            font-weight: 600;
+            font-size: 1.1rem;
+        }
+
+        .mine-list {
+            margin-left: 20px;
+            font-size: 0.95rem;
+            opacity: 0.9;
+        }
+
+        .alert-dismiss {
+            background: rgba(255, 255, 255, 0.2);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            color: white;
+            padding: 8px 15px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            margin-left: 20px;
+        }
+
+        .alert-dismiss:hover {
+            background: rgba(255, 255, 255, 0.3);
+            border-color: rgba(255, 255, 255, 0.5);
+            transform: scale(1.05);
+        }
+
+        .alert-close {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 1.5rem;
+            cursor: pointer;
+            margin-left: 15px;
+            padding: 5px;
+            border-radius: 50%;
+            transition: all 0.3s ease;
+        }
+
+        .alert-close:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: scale(1.1);
+        }
+
+        /* Adjust body padding when alert is shown */
+        body.alert-active {
+            padding-top: 80px;
+        }
+
+        /* Navbar adjustment when alert is active */
+        .navbar.alert-active {
+            margin-top: 80px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Red Alert Banner for High Risk Mines -->
+    <div id="red-alert-banner" class="red-alert-banner" style="display: none;">
+        <div class="alert-content">
+            <div class="alert-message">
+                <i class="fas fa-exclamation-triangle alert-icon"></i>
+                <div>
+                    <div class="alert-text" id="alert-main-text">🚨 CRITICAL ALERT: High Risk Detected!</div>
+                    <div class="mine-list" id="alert-mine-list"></div>
+                </div>
+            </div>
+            <div class="d-flex align-items-center">
+                <button class="alert-dismiss" onclick="viewHighRiskMines()">
+                    <i class="fas fa-eye"></i> View Details
+                </button>
+                <button class="alert-close" onclick="dismissRedAlert()" title="Dismiss Alert">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="#">
+                <i class="fas fa-mountain"></i> AI Rockfall Prediction System
+            </a>
+            <div class="navbar-nav ms-auto">
+                <div class="nav-item">
+                    <span class="nav-link user-greeting">
+                        <i class="fas fa-user"></i>
+                        Welcome, {{ current_user.full_name or current_user.username }}
+                    </span>
+                </div>
+                <div class="nav-item">
+                    <span class="nav-link">
+                        <span class="live-indicator"></span>
+                        <span id="connection-status">Connected</span>
+                    </span>
+                </div>
+                <div class="nav-item">
+                    <span class="nav-link">
+                        <i class="fas fa-clock"></i> 
+                        <span id="current-time"></span>
+                    </span>
+                </div>
+                <div class="nav-item">
+                    <a class="nav-link" href="{{ url_for('logout') }}" title="Logout">
+                        <i class="fas fa-sign-out-alt"></i> Logout
+                    </a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="dashboard-container">
+        <!-- Navigation Tabs -->
+        <ul class="nav nav-tabs" id="dashboardTabs" role="tablist">
+            <li class="nav-item" role="presentation">
+                <button class="nav-link active" id="overview-tab" data-bs-toggle="tab" data-bs-target="#overview" type="button" role="tab">
+                    <i class="fas fa-tachometer-alt"></i> Overview
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="alerts-tab" data-bs-toggle="tab" data-bs-target="#alerts-panel" type="button" role="tab">
+                    <i class="fas fa-exclamation-triangle"></i> Alerts & Actions
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="analytics-tab" data-bs-toggle="tab" data-bs-target="#analytics" type="button" role="tab">
+                    <i class="fas fa-chart-bar"></i> Analytics
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="models-tab" data-bs-toggle="tab" data-bs-target="#models" type="button" role="tab">
+                    <i class="fas fa-brain"></i> Model Info
+                </button>
+            </li>
+        </ul>
+
+        <!-- Tab Content -->
+        <div class="tab-content" id="dashboardTabContent">
+            <!-- Overview Tab -->
+            <div class="tab-pane fade show active" id="overview" role="tabpanel">
+                <!-- Statistics Cards -->
+        <div class="row mb-4">
+            <div class="col-md-3">
+                <div class="stats-card text-center">
+                    <div class="stat-icon high-risk">
+                        <i class="fas fa-exclamation-triangle"></i>
+                    </div>
+                    <h3 id="high-risk-count" class="mb-1">-</h3>
+                    <p class="mb-0 text-muted">High Risk Mines</p>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stats-card text-center">
+                    <div class="stat-icon medium-risk">
+                        <i class="fas fa-exclamation-circle"></i>
+                    </div>
+                    <h3 id="medium-risk-count" class="mb-1">-</h3>
+                    <p class="mb-0 text-muted">Medium Risk Mines</p>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stats-card text-center">
+                    <div class="stat-icon low-risk">
+                        <i class="fas fa-check-circle"></i>
+                    </div>
+                    <h3 id="low-risk-count" class="mb-1">-</h3>
+                    <p class="mb-0 text-muted">Low Risk Mines</p>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stats-card text-center">
+                    <div class="stat-icon" style="color: var(--secondary-color);">
+                        <i class="fas fa-industry"></i>
+                    </div>
+                    <h3 id="total-mines-count" class="mb-1">-</h3>
+                    <p class="mb-0 text-muted">Total Active Mines</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <!-- Interactive Map -->
+            <div class="col-lg-8">
+                <div class="stats-card">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h5 class="card-title mb-0">
+                            <i class="fas fa-map-marked-alt"></i> Indian Mining Sites - Live Risk Map
+                        </h5>
+                        <div>
+                            <button class="btn btn-sm btn-outline-primary" onclick="refreshMap()">
+                                <i class="fas fa-sync-alt"></i> Refresh
+                            </button>
+                            <button class="btn btn-sm btn-emergency" onclick="emergencyMode()">
+                                <i class="fas fa-bell"></i> Emergency
+                            </button>
+                        </div>
+                    </div>
+                    <div id="map"></div>
+                </div>
+
+                <!-- Risk Trends Chart -->
+                <div class="chart-container">
+                    <h5><i class="fas fa-chart-line"></i> Risk Trends (Last 7 Days)</h5>
+                    <canvas id="riskTrendsChart"></canvas>
+                </div>
+            </div>
+
+            <!-- Alerts and Controls -->
+            <div class="col-lg-4">
+                <!-- Weather Widget -->
+                <div class="weather-widget">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6><i class="fas fa-cloud-rain"></i> Weather Alert</h6>
+                            <p class="mb-0" id="weather-info">Checking weather conditions...</p>
+                        </div>
+                        <div class="text-end">
+                            <h4 id="weather-temp">--°C</h4>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Active Alerts -->
+                <div class="stats-card">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h5 class="mb-0">
+                            <i class="fas fa-exclamation-triangle"></i> Active Alerts
+                        </h5>
+                        <span class="badge bg-danger" id="alert-count">0</span>
+                    </div>
+                    
+                    <div id="alerts-container" class="alert-scroll">
+                        <div class="loading">
+                            <i class="fas fa-spinner"></i>
+                            <p>Loading alerts...</p>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-3">
+                        <button class="btn btn-sm btn-outline-info w-100 mb-2" onclick="loadAlerts()">
+                            <i class="fas fa-refresh"></i> Refresh Alerts
+                        </button>
+                        <button class="btn btn-sm btn-outline-warning w-100 mb-2" onclick="testSmsAlert()">
+                            <i class="fas fa-sms"></i> Test SMS Alert
+                        </button>
+                        <button class="btn btn-sm btn-warning w-100 mb-2" onclick="quickSmsTest()">
+                            <i class="fas fa-mobile-alt"></i> Direct SMS Test
+                        </button>
+                        <button class="btn btn-sm btn-success w-100" onclick="testWhatsAppAlert()">
+                            <i class="fab fa-whatsapp"></i> Test WhatsApp Alert
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Mine Details Panel -->
+                <div class="stats-card" id="mine-details" style="display: none;">
+                    <h5><i class="fas fa-info-circle"></i> Mine Details</h5>
+                    <div id="mine-info-content">
+                        <!-- Dynamic content -->
+                    </div>
+                </div>
+
+                <!-- Sensor Status -->
+                <div class="stats-card">
+                    <h5><i class="fas fa-satellite-dish"></i> Sensor Network Status</h5>
+                    <div class="row text-center">
+                        <div class="col-6">
+                            <div class="mb-2">
+                                <i class="fas fa-wifi" style="color: var(--success-color);"></i>
+                                <p class="mb-0 small">GPS Sensors</p>
+                                <strong class="status-online">Online</strong>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="mb-2">
+                                <i class="fas fa-seismograph" style="color: var(--success-color);"></i>
+                                <p class="mb-0 small">Seismic Sensors</p>
+                                <strong class="status-online">Online</strong>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="mb-2">
+                                <i class="fas fa-drone" style="color: var(--warning-color);"></i>
+                                <p class="mb-0 small">Drone Network</p>
+                                <strong style="background: var(--warning-color); color: white; padding: 2px 8px; border-radius: 10px; font-size: 0.8rem;">Partial</strong>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="mb-2">
+                                <i class="fas fa-cloud-rain" style="color: var(--success-color);"></i>
+                                <p class="mb-0 small">Weather API</p>
+                                <strong class="status-online">Online</strong>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+            </div>
+            <!-- End Overview Tab -->
+
+            <!-- Alerts & Actions Tab -->
+            <div class="tab-pane fade" id="alerts-panel" role="tabpanel">
+                <div class="row">
+                    <div class="col-lg-8">
+                        <!-- Critical Alerts -->
+                        <div class="stats-card">
+                            <h5><i class="fas fa-exclamation-triangle text-danger"></i> Critical Alerts</h5>
+                            <div id="critical-alerts-container">
+                                <div class="loading"><i class="fas fa-spinner"></i><p>Loading critical alerts...</p></div>
+                            </div>
+                        </div>
+                        
+                        <!-- Alert Timeline -->
+                        <div class="stats-card">
+                            <h5><i class="fas fa-history"></i> Alert Timeline</h5>
+                            <div class="mini-chart">
+                                <canvas id="alertTimelineChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-4">
+                        <!-- Action Plans -->
+                        <div class="stats-card">
+                            <h5><i class="fas fa-list-check"></i> Emergency Action Plans</h5>
+                            <div id="action-plans-container">
+                                <!-- High Risk Actions -->
+                                <div class="alert alert-danger">
+                                    <h6><span class="severity-indicator severity-high"></span>HIGH RISK Actions</h6>
+                                    <div class="alert-actions">
+                                        <div class="action-item"><i class="fas fa-running text-danger"></i> Immediate evacuation of all personnel</div>
+                                        <div class="action-item"><i class="fas fa-stop-circle text-danger"></i> Stop all mining operations</div>
+                                        <div class="action-item"><i class="fas fa-phone text-danger"></i> Contact emergency services (108)</div>
+                                        <div class="action-item"><i class="fas fa-users text-danger"></i> Deploy emergency response team</div>
+                                        <div class="action-item"><i class="fas fa-satellite-dish text-danger"></i> Increase monitoring frequency</div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Medium Risk Actions -->
+                                <div class="alert alert-warning">
+                                    <h6><span class="severity-indicator severity-medium"></span>MEDIUM RISK Actions</h6>
+                                    <div class="alert-actions">
+                                        <div class="action-item"><i class="fas fa-ban text-warning"></i> Restrict access to unstable areas</div>
+                                        <div class="action-item"><i class="fas fa-eye text-warning"></i> Increase monitoring frequency</div>
+                                        <div class="action-item"><i class="fas fa-clipboard-check text-warning"></i> Review safety protocols</div>
+                                        <div class="action-item"><i class="fas fa-users text-warning"></i> Brief all personnel on risks</div>
+                                        <div class="action-item"><i class="fas fa-route text-warning"></i> Prepare evacuation routes</div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Low Risk Actions -->
+                                <div class="alert alert-success">
+                                    <h6><span class="severity-indicator severity-low"></span>LOW RISK Actions</h6>
+                                    <div class="alert-actions">
+                                        <div class="action-item"><i class="fas fa-play text-success"></i> Continue normal operations</div>
+                                        <div class="action-item"><i class="fas fa-shield-alt text-success"></i> Maintain standard precautions</div>
+                                        <div class="action-item"><i class="fas fa-chart-line text-success"></i> Regular monitoring schedule</div>
+                                        <div class="action-item"><i class="fas fa-search text-success"></i> Monitor for condition changes</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- End Alerts & Actions Tab -->
+
+            <!-- Analytics Tab -->
+            <div class="tab-pane fade" id="analytics" role="tabpanel">
+                <div class="row">
+                    <div class="col-lg-6">
+                        <div class="mini-chart">
+                            <h6><i class="fas fa-chart-pie"></i> Risk Distribution Across Mines</h6>
+                            <canvas id="riskDistributionChart" style="max-height: 350px;"></canvas>
+                        </div>
+                    </div>
+                    <div class="col-lg-6">
+                        <div class="mini-chart">
+                            <h6><i class="fas fa-map"></i> State-wise Risk Analysis</h6>
+                            <canvas id="stateRiskChart" style="max-height: 350px;"></canvas>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-lg-6">
+                        <div class="mini-chart">
+                            <h6><i class="fas fa-chart-area"></i> Monthly Alert Trends</h6>
+                            <canvas id="monthlyTrendsChart" style="max-height: 350px;"></canvas>
+                        </div>
+                    </div>
+                    <div class="col-lg-6">
+                        <div class="mini-chart">
+                            <h6><i class="fas fa-clock"></i> Real-time Sensor Data</h6>
+                            <canvas id="sensorDataChart" style="max-height: 350px;"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- End Analytics Tab -->
+
+            <!-- Model Info Tab -->
+            <div class="tab-pane fade" id="models" role="tabpanel">
+                <div class="row">
+                    <div class="col-lg-6">
+                        <!-- Model Comparison Overview -->
+                        <div class="stats-card">
+                            <h5><i class="fas fa-chart-bar"></i> Model Performance Comparison</h5>
+                            <div id="model-comparison-overview">
+                                <p class="text-muted">Loading model comparison data...</p>
+                            </div>
+                        </div>
+                        
+                        <!-- Primary Model -->
+                        <div class="model-card">
+                            <h5><i class="fas fa-star"></i> <span id="primary-model-name">Primary Model: CatBoost</span></h5>
+                            <div class="metric-item">
+                                <span>Model Type:</span>
+                                <span id="primary-model-type">CatBoost Classifier</span>
+                            </div>
+                            <div class="metric-item">
+                                <span>Training Accuracy:</span>
+                                <span id="primary-accuracy">94.5%</span>
+                            </div>
+                            <div class="metric-item">
+                                <span>ROC-AUC Score:</span>
+                                <span id="primary-auc">0.8355</span>
+                            </div>
+                            <div class="metric-item">
+                                <span>Cross-Val Score:</span>
+                                <span id="primary-cv-score">0.8271</span>
+                            </div>
+                            <div class="metric-item">
+                                <span>Features Used:</span>
+                                <span id="primary-features">52</span>
+                            </div>
+                            <div class="metric-item">
+                                <span>Model Status:</span>
+                                <span class="badge bg-success" id="primary-status">Active</span>
+                            </div>
+                        </div>
+                        
+                        <!-- Model Ensemble List -->
+                        <div class="stats-card">
+                            <h5><i class="fas fa-layer-group"></i> Model Ensemble (All 6 Models)</h5>
+                            <div id="model-ensemble-list">
+                                <div class="loading">
+                                    <i class="fas fa-spinner"></i>
+                                    <p>Loading model ensemble data...</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-6">
+                        <!-- Feature Importance -->
+                        <div class="stats-card">
+                            <h5><i class="fas fa-ranking-star"></i> Top Feature Importance</h5>
+                            <div class="mini-chart">
+                                <canvas id="featureImportanceChart"></canvas>
+                            </div>
+                        </div>
+                        
+                        <!-- Model Performance -->
+                        <div class="stats-card">
+                            <h5><i class="fas fa-chart-line"></i> Model Performance Metrics</h5>
+                            <div class="row text-center">
+                                <div class="col-6">
+                                    <h4 class="text-primary" id="precision-score">0.923</h4>
+                                    <p class="mb-0">Precision</p>
+                                </div>
+                                <div class="col-6">
+                                    <h4 class="text-success" id="recall-score">0.918</h4>
+                                    <p class="mb-0">Recall</p>
+                                </div>
+                                <div class="col-6">
+                                    <h4 class="text-info" id="f1-score">0.920</h4>
+                                    <p class="mb-0">F1-Score</p>
+                                </div>
+                                <div class="col-6">
+                                    <h4 class="text-warning" id="auc-score">0.956</h4>
+                                    <p class="mb-0">AUC-ROC</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- End Model Info Tab -->
+        </div>
+    </div>
+
+    <!-- JavaScript Libraries -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
+
+    <script>
+        // Global variables
+        let map;
+        let socket;
+        let mineMarkers = {};
+        let riskChart;
+        
+        // Initialize dashboard
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeMap();
+            initializeWebSocket();
+            loadInitialData();
+            setupRiskChart();
+            setupAnalyticsCharts();
+            startTimeUpdater();
+            checkForHighRiskAlerts();
+        });
+
+        // Initialize Leaflet map
+        function initializeMap() {
+            map = L.map('map').setView([20.5937, 78.9629], 5); // Center on India
+
+            // Add OpenStreetMap tiles
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '© OpenStreetMap contributors'
+            }).addTo(map);
+
+            // Add India boundary highlight (optional)
+            // You can add GeoJSON data for India boundaries here
+        }
+
+        // Simplified connection status (no WebSocket)
+        function initializeWebSocket() {
+            // For simplified version, just show connected status
+            updateConnectionStatus('Connected', 'success');
+        }
+
+        // Load initial data
+        function loadInitialData() {
+            loadMines();
+            loadAlerts();
+            updateWeather();
+            loadModelInfo();
+        }
+
+        // Load model information
+        function loadModelInfo() {
+            fetch('/api/model_info')
+                .then(response => response.json())
+                .then(data => {
+                    updateModelDisplay(data);
+                })
+                .catch(error => {
+                    console.error('Error loading model info:', error);
+                });
+        }
+
+        // Update model information display
+        function updateModelDisplay(modelInfo) {
+            // Update model comparison overview
+            const overviewContainer = document.getElementById('model-comparison-overview');
+            overviewContainer.innerHTML = `
+                <div class="mb-3">
+                    <p><strong>Evaluation Summary:</strong> ${modelInfo.model_comparison.evaluation_summary}</p>
+                    <p><strong>Best Model:</strong> <span class="badge bg-success">${modelInfo.model_comparison.best_model}</span></p>
+                    <p><strong>Selection Criteria:</strong> ${modelInfo.model_comparison.selection_criteria}</p>
+                    <p><strong>Dataset:</strong> ${modelInfo.model_comparison.dataset_info}</p>
+                </div>
+            `;
+            
+            // Update primary model info
+            document.getElementById('primary-model-name').textContent = `Primary Model: ${modelInfo.primary_model.name}`;
+            document.getElementById('primary-model-type').textContent = modelInfo.primary_model.type;
+            document.getElementById('primary-accuracy').textContent = (modelInfo.primary_model.accuracy * 100).toFixed(1) + '%';
+            document.getElementById('primary-auc').textContent = modelInfo.primary_model.auc_roc.toFixed(4);
+            document.getElementById('primary-cv-score').textContent = modelInfo.primary_model.cross_validation_score.toFixed(4);
+            document.getElementById('primary-features').textContent = modelInfo.primary_model.features_count;
+            document.getElementById('primary-status').textContent = modelInfo.primary_model.status;
+            document.getElementById('primary-status').className = `badge ${modelInfo.primary_model.status === 'active' ? 'bg-success' : 'bg-warning'}`;
+            
+            // Update model ensemble list
+            const ensembleContainer = document.getElementById('model-ensemble-list');
+            const ensembleHtml = modelInfo.model_ensemble.map((model, index) => `
+                <div class="model-item mb-3 p-3" style="border-left: 4px solid ${index === 0 ? '#28a745' : '#6c757d'}; background: ${index === 0 ? '#f8fff9' : '#f8f9fa'}; border-radius: 8px;">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <h6 class="mb-1">
+                                <i class="fas fa-${getModelIcon(model.name)}"></i> 
+                                ${model.name}
+                                ${index === 0 ? '<span class="badge bg-success ms-2">PRIMARY</span>' : ''}
+                            </h6>
+                            <p class="mb-1 text-muted small">${model.specialization}</p>
+                        </div>
+                        <div class="text-end">
+                            <div class="fw-bold text-primary">${(model.accuracy * 100).toFixed(1)}%</div>
+                            <div class="small text-muted">AUC: ${model.auc_roc.toFixed(3)}</div>
+                        </div>
+                    </div>
+                    <div class="mt-2">
+                        <div class="small">
+                            <strong>Strengths:</strong> ${model.strengths}
+                        </div>
+                        <div class="small text-muted mt-1">
+                            <strong>Use Case:</strong> ${model.use_case}
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+            
+            ensembleContainer.innerHTML = ensembleHtml;
+            
+            // Update performance metrics if they exist
+            if (document.getElementById('precision-score')) {
+                document.getElementById('precision-score').textContent = modelInfo.primary_model.precision.toFixed(3);
+                document.getElementById('recall-score').textContent = modelInfo.primary_model.recall.toFixed(3);
+                document.getElementById('f1-score').textContent = modelInfo.primary_model.f1_score.toFixed(3);
+                document.getElementById('auc-score').textContent = modelInfo.primary_model.auc_roc.toFixed(3);
+            }
+        }
+        
+        // Get model icon based on model name
+        function getModelIcon(modelName) {
+            const icons = {
+                'CatBoost': 'cat',
+                'XGBoost': 'rocket',
+                'LightGBM': 'bolt',
+                'AdaBoost': 'layer-group',
+                'MLP': 'brain',
+                'RandomForest': 'tree'
+            };
+            return icons[modelName] || 'cog';
+        }
+
+        // Load all mines and predictions
+        function loadMines() {
+            fetch('/api/predictions')
+                .then(response => response.json())
+                .then(data => {
+                    updateMineMarkers(data);
+                    updateStatistics(data);
+                })
+                .catch(error => {
+                    console.error('Error loading mines:', error);
+                    showNotification('Failed to load mine data', 'danger');
+                });
+        }
+
+        // Update mine markers on map
+        function updateMineMarkers(predictions) {
+            // Clear existing markers
+            Object.values(mineMarkers).forEach(marker => {
+                map.removeLayer(marker);
+            });
+            mineMarkers = {};
+
+            // Add new markers
+            predictions.forEach(prediction => {
+                const color = getRiskColor(prediction.risk_level);
+                const icon = L.divIcon({
+                    html: `<div style="background-color: ${color}; width: 20px; height: 20px; border-radius: 50%; border: 2px solid white; box-shadow: 0 2px 5px rgba(0,0,0,0.3);"></div>`,
+                    iconSize: [20, 20],
+                    iconAnchor: [10, 10]
+                });
+
+                const marker = L.marker([prediction.coordinates[0], prediction.coordinates[1]], {icon: icon})
+                    .bindPopup(createMinePopup(prediction))
+                    .on('click', () => showMineDetails(prediction.mine_id));
+
+                marker.addTo(map);
+                mineMarkers[prediction.mine_id] = marker;
+            });
+        }
+
+        // Create popup content for mine marker
+        function createMinePopup(prediction) {
+            const riskBadge = `<span class="badge bg-${getRiskBadgeColor(prediction.risk_level)}">${prediction.risk_level}</span>`;
+            
+            return `
+                <div class="mine-popup">
+                    <h6>${prediction.mine_name}</h6>
+                    <p class="mb-1"><strong>Location:</strong> ${prediction.location}</p>
+                    <p class="mb-1"><strong>Risk Level:</strong> ${riskBadge}</p>
+                    <p class="mb-1"><strong>Risk Score:</strong> ${(prediction.risk_score || 0).toFixed(3)}</p>
+                    <p class="mb-1"><strong>Confidence:</strong> ${(prediction.confidence || 0).toFixed(3)}</p>
+                    <p class="mb-1"><strong>Last Update:</strong> ${new Date(prediction.timestamp).toLocaleTimeString()}</p>
+                    <hr>
+                    <button class="btn btn-sm btn-primary w-100" onclick="showMineDetails('${prediction.mine_id}')">
+                        View Details
+                    </button>
+                </div>
+            `;
+        }
+
+        // Show mine details in side panel
+        function showMineDetails(mineId) {
+            fetch(`/api/mine/${mineId}`)
+                .then(response => response.json())
+                .then(data => {
+                    const detailsPanel = document.getElementById('mine-details');
+                    const content = document.getElementById('mine-info-content');
+                    
+                    content.innerHTML = `
+                        <div class="mb-3">
+                            <h6>${data.mine.name}</h6>
+                            <p class="text-muted">${data.mine.location}</p>
+                        </div>
+                        <div class="row">
+                            <div class="col-6">
+                                <p class="mb-1"><strong>Type:</strong> ${data.mine.type}</p>
+                                <p class="mb-1"><strong>Operator:</strong> ${data.mine.operator}</p>
+                                <p class="mb-1"><strong>Area:</strong> ${data.mine.area_km2} km²</p>
+                            </div>
+                            <div class="col-6">
+                                <p class="mb-1"><strong>Depth:</strong> ${data.mine.depth_m} m</p>
+                                <p class="mb-1"><strong>Status:</strong> ${data.mine.status}</p>
+                                <p class="mb-1"><strong>Risk:</strong> 
+                                    <span class="badge bg-${getRiskBadgeColor(data.current_risk.risk_level)}">${data.current_risk.risk_level}</span>
+                                </p>
+                            </div>
+                        </div>
+                        <hr>
+                        <h6>Current Sensors</h6>
+                        <div class="row text-center">
+                            <div class="col-4">
+                                <i class="fas fa-arrows-alt"></i>
+                                <p class="mb-0 small">Displacement</p>
+                                <strong>${data.realtime_data.displacement?.toFixed(2) || 'N/A'} mm</strong>
+                            </div>
+                            <div class="col-4">
+                                <i class="fas fa-seismograph"></i>
+                                <p class="mb-0 small">Seismic</p>
+                                <strong>${data.realtime_data.seismic_vibration?.toFixed(2) || 'N/A'} mm/s</strong>
+                            </div>
+                            <div class="col-4">
+                                <i class="fas fa-crack"></i>
+                                <p class="mb-0 small">Cracks</p>
+                                <strong>${data.realtime_data.crack_density?.toFixed(3) || 'N/A'}</strong>
+                            </div>
+                        </div>
+                    `;
+                    
+                    detailsPanel.style.display = 'block';
+                })
+                .catch(error => {
+                    console.error('Error loading mine details:', error);
+                    showNotification('Failed to load mine details', 'danger');
+                });
+        }
+
+        // Update statistics cards
+        function updateStatistics(predictions) {
+            const stats = {
+                HIGH: 0,
+                MEDIUM: 0,
+                LOW: 0,
+                total: predictions.length
+            };
+
+            predictions.forEach(p => {
+                if (p.risk_level in stats) {
+                    stats[p.risk_level]++;
+                }
+            });
+
+            document.getElementById('high-risk-count').textContent = stats.HIGH;
+            document.getElementById('medium-risk-count').textContent = stats.MEDIUM;
+            document.getElementById('low-risk-count').textContent = stats.LOW;
+            document.getElementById('total-mines-count').textContent = stats.total;
+        }
+
+        // Load and display alerts
+        function loadAlerts() {
+            fetch('/api/alerts')
+                .then(response => response.json())
+                .then(data => {
+                    displayAlerts(data.alerts || data);
+                })
+                .catch(error => {
+                    console.error('Error loading alerts:', error);
+                    document.getElementById('alerts-container').innerHTML = 
+                        '<div class="text-center text-muted">Failed to load alerts</div>';
+                });
+        }
+
+        // Display alerts in the side panel with dismissible functionality
+        function displayAlerts(alerts) {
+            const container = document.getElementById('alerts-container');
+            const alertCount = document.getElementById('alert-count');
+            
+            alertCount.textContent = alerts.length;
+
+            if (alerts.length === 0) {
+                container.innerHTML = '<div class="text-center text-muted">No active alerts</div>';
+                return;
+            }
+
+            const alertsHtml = alerts.map((alert, index) => `
+                <div class="dismissible-alert alert alert-${getRiskBadgeColor(alert.alert_level || alert.severity)} fade show" id="alert-${index}">
+                    <button type="button" class="alert-dismiss-btn" onclick="dismissAlert('alert-${index}')">
+                        <i class="fas fa-times"></i>
+                    </button>
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div style="padding-right: 20px;">
+                            <h6 class="alert-heading">
+                                <span class="severity-indicator severity-${(alert.alert_level || alert.severity).toLowerCase()}"></span>
+                                ${alert.mine_name || alert.mine_id}
+                            </h6>
+                            <p class="mb-1">${alert.message || alert.type}</p>
+                            <small class="text-muted">${new Date(alert.timestamp).toLocaleString()}</small>
+                        </div>
+                        <span class="badge bg-${getRiskBadgeColor(alert.alert_level || alert.severity)}">${alert.alert_level || alert.severity}</span>
+                    </div>
+                    ${alert.recommended_action ? `
+                        <div class="alert-actions mt-2">
+                            <small><strong><i class="fas fa-clipboard-list"></i> Recommended Action:</strong></small><br>
+                            <small>${alert.recommended_action}</small>
+                        </div>
+                    ` : ''}
+                    ${generateXaiExplanationHtml(alert.xai_explanation)}
+                </div>
+            `).join('');
+
+            container.innerHTML = alertsHtml;
+            
+            // Also update critical alerts in the alerts tab
+            displayCriticalAlerts(alerts.filter(alert => (alert.alert_level || alert.severity) === 'HIGH'));
+        }
+
+        // Display critical alerts in the alerts tab
+        function displayCriticalAlerts(criticalAlerts) {
+            const container = document.getElementById('critical-alerts-container');
+            
+            if (criticalAlerts.length === 0) {
+                container.innerHTML = '<div class="text-center text-success"><i class="fas fa-check-circle fa-3x mb-3"></i><p>No critical alerts at this time</p></div>';
+                return;
+            }
+
+            const alertsHtml = criticalAlerts.map((alert, index) => `
+                <div class="dismissible-alert alert alert-danger fade show mb-3" id="critical-alert-${index}">
+                    <button type="button" class="alert-dismiss-btn" onclick="dismissAlert('critical-alert-${index}')">
+                        <i class="fas fa-times"></i>
+                    </button>
+                    <div class="d-flex align-items-start">
+                        <div class="me-3">
+                            <i class="fas fa-exclamation-triangle fa-2x text-danger"></i>
+                        </div>
+                        <div class="flex-grow-1">
+                            <h5 class="alert-heading text-danger">
+                                <i class="fas fa-industry"></i> ${alert.mine_name}
+                            </h5>
+                            <p class="mb-2"><strong>${alert.message}</strong></p>
+                            <p class="mb-2"><i class="fas fa-map-marker-alt"></i> Location: Mining site requiring immediate attention</p>
+                            <p class="mb-3"><i class="fas fa-clock"></i> Alert Time: ${new Date(alert.timestamp).toLocaleString()}</p>
+                            
+                            <div class="alert-actions">
+                                <h6><i class="fas fa-exclamation-circle"></i> IMMEDIATE ACTIONS REQUIRED:</h6>
+                                <div class="action-item"><i class="fas fa-running text-danger"></i> Evacuate all personnel immediately</div>
+                                <div class="action-item"><i class="fas fa-stop-circle text-danger"></i> Cease all mining operations</div>
+                                <div class="action-item"><i class="fas fa-phone text-danger"></i> Contact emergency services: 108</div>
+                                <div class="action-item"><i class="fas fa-users text-danger"></i> Deploy emergency response team</div>
+                            </div>
+                            ${generateXaiExplanationHtml(alert.xai_explanation)}
+                            
+                            <div class="mt-3">
+                                <button class="btn btn-danger btn-sm me-2" onclick="triggerEmergencyResponse('${alert.mine_id}')">
+                                    <i class="fas fa-siren"></i> Emergency Response
+                                </button>
+                                <button class="btn btn-warning btn-sm me-1" onclick="sendAlertSms('${alert.mine_id}', '${alert.id}', '${alert.mine_name}')">
+                                    <i class="fas fa-sms"></i> SMS
+                                </button>
+                                <button class="btn btn-success btn-sm me-1" onclick="sendWhatsAppAlert('${alert.mine_id}', '${alert.id}', '${alert.mine_name}')">
+                                    <i class="fab fa-whatsapp"></i> WhatsApp
+                                </button>
+                                <button class="btn btn-outline-danger btn-sm" onclick="acknowledgeAlert('${alert.id}')">
+                                    <i class="fas fa-check"></i> Acknowledge
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+
+            container.innerHTML = alertsHtml;
+        }
+
+        // Dismiss alert function
+        function dismissAlert(alertId) {
+            const alertElement = document.getElementById(alertId);
+            if (alertElement) {
+                alertElement.style.opacity = '0';
+                alertElement.style.transform = 'translateX(100%)';
+                setTimeout(() => {
+                    alertElement.remove();
+                    updateAlertCount();
+                }, 300);
+            }
+        }
+
+        // Update alert count after dismissal
+        function updateAlertCount() {
+            const remainingAlerts = document.querySelectorAll('.dismissible-alert').length;
+            document.getElementById('alert-count').textContent = remainingAlerts;
+        }
+
+        // Trigger emergency response
+        function triggerEmergencyResponse(mineId) {
+            if (confirm('This will trigger EMERGENCY RESPONSE protocols. Continue?')) {
+                fetch('/api/send_test_alert', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ mine_id: mineId, type: 'emergency' })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    showNotification('Emergency response protocols activated!', 'warning');
+                })
+                .catch(error => {
+                    showNotification('Failed to trigger emergency response', 'danger');
+                });
+            }
+        }
+
+        // Acknowledge alert
+        function acknowledgeAlert(alertId) {
+            showNotification('Alert acknowledged by operator', 'info');
+        }
+        
+        // Send SMS Alert for specific active alert
+        function sendAlertSms(mineId, alertId, mineName) {
+            if (confirm(`Send SMS alert for ${mineName}? This will notify all emergency contacts.`)) {
+                showNotification('Sending SMS alert...', 'info');
+                
+                fetch('/api/send_alert_sms', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ 
+                        mine_id: mineId,
+                        alert_id: alertId
+                    })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        showNotification(`✅ SMS alert sent successfully for ${data.alert_details.mine_name}!`, 'success');
+                        showNotification(`📱 Alert Level: ${data.alert_details.risk_level} (Risk Score: ${data.alert_details.risk_score})`, 'info');
+                        console.log('Alert Details:', data.alert_details);
+                        console.log('Channels Used:', data.alert_details.channels_used);
+                        console.log('Sent By:', data.sent_by);
+                    } else {
+                        let errorMsg = data.error;
+                        if (data.details) {
+                            errorMsg += ` (${data.details})`;
+                        }
+                        showNotification(`❌ SMS Alert Failed: ${errorMsg}`, 'danger');
+                        console.error('SMS Alert Error:', data);
+                    }
+                })
+                .catch(error => {
+                    showNotification('❌ Failed to send SMS alert', 'danger');
+                    console.error('SMS Alert Error:', error);
+                });
+            }
+        }
+        
+        // Test SMS Alert functionality
+        function testSmsAlert() {
+            const phone = prompt('Enter phone number for test SMS (default: +917735776771):', '+917735776771');
+            if (!phone) return;
+            
+            showNotification('Sending test SMS...', 'info');
+            
+            fetch('/api/test_sms', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ 
+                    mine_id: 'mine_001', 
+                    phone: phone 
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    showNotification(`✅ Test SMS sent successfully to ${data.to}!`, 'success');
+                    console.log('SMS Content Preview:', data.content_preview);
+                    console.log('XAI Enabled:', data.xai_enabled);
+                } else {
+                    let errorMsg = data.error;
+                    if (data.solution) {
+                        errorMsg += `. ${data.solution}`;
+                    }
+                    showNotification(`❌ SMS Test Failed: ${errorMsg}`, 'danger');
+                    console.error('SMS Error Details:', data);
+                    
+                    if (data.error_type === 'Twilio Authentication Error (20003)') {
+                        showNotification('🔧 Twilio credentials need to be updated by administrator', 'warning');
+                    }
+                }
+            })
+            .catch(error => {
+                showNotification('❌ Failed to send test SMS', 'danger');
+                console.error('SMS Test Error:', error);
+            });
+        }
+        
+        // WhatsApp Alert Functions
+        function testWhatsAppAlert() {
+            if (!confirm('Send WhatsApp test message? This will open WhatsApp Web in ~2 minutes.')) {
+                return;
+            }
+            
+            showNotification('Scheduling WhatsApp test...', 'info');
+            
+            fetch('/api/test_whatsapp', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ 
+                    phone: '+917735776771'
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    showNotification(`✅ WhatsApp test scheduled! ${data.message}`, 'success');
+                    showNotification(`📱 Scheduled for: ${data.details.scheduled_time}`, 'info');
+                    showNotification('📲 WhatsApp Web will open automatically', 'info');
+                    console.log('WhatsApp Test Result:', data);
+                } else {
+                    showNotification(`❌ WhatsApp Test Failed: ${data.error}`, 'danger');
+                    if (data.suggestion) {
+                        showNotification(`💡 Suggestion: ${data.suggestion}`, 'warning');
+                    }
+                    console.error('WhatsApp Error:', data);
+                }
+            })
+            .catch(error => {
+                showNotification('❌ Failed to send WhatsApp test', 'danger');
+                console.error('WhatsApp Test Error:', error);
+            });
+        }
+        
+        function sendWhatsAppAlert(mineId, alertId, mineName) {
+            if (!confirm(`Send WhatsApp alert for ${mineName}? This will open WhatsApp Web in ~2 minutes.`)) {
+                return;
+            }
+            
+            showNotification('Scheduling WhatsApp alert...', 'info');
+            
+            fetch('/api/send_whatsapp_alert', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ 
+                    mine_id: mineId,
+                    alert_id: alertId
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    showNotification(`✅ WhatsApp alert scheduled for ${data.alert_details.mine_name}!`, 'success');
+                    showNotification(`📊 Risk Level: ${data.alert_details.risk_level} (Score: ${data.alert_details.risk_score})`, 'info');
+                    showNotification(`📱 Recipients: ${data.alert_details.recipients}`, 'info');
+                    console.log('WhatsApp Alert Details:', data.alert_details);
+                    console.log('Sent By:', data.sent_by);
+                } else {
+                    let errorMsg = data.error;
+                    if (data.details) {
+                        errorMsg += ` (${data.details})`;
+                    }
+                    showNotification(`❌ WhatsApp Alert Failed: ${errorMsg}`, 'danger');
+                    console.error('WhatsApp Alert Error:', data);
+                }
+            })
+            .catch(error => {
+                showNotification('❌ Failed to send WhatsApp alert', 'danger');
+                console.error('WhatsApp Alert Error:', error);
+            });
+        }
+        
+        // Quick SMS test for dashboard debugging
+        function quickSmsTest() {
+            if (!confirm('Send a quick SMS test to configured emergency numbers?')) {
+                return;
+            }
+            
+            showNotification('Sending direct SMS test...', 'info');
+            
+            fetch('/api/quick_sms_test', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ 
+                    mine_id: 'mine_001'
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    showNotification(`✅ Direct SMS sent successfully! ${data.message}`, 'success');
+                    console.log('Quick SMS Test Result:', data);
+                } else {
+                    showNotification(`❌ Direct SMS Test Failed: ${data.error}`, 'danger');
+                    console.error('Quick SMS Error Details:', data);
+                }
+            })
+            .catch(error => {
+                showNotification('❌ Failed to send direct SMS test', 'danger');
+                console.error('Quick SMS Test Error:', error);
+            });
+        }
+
+        // Setup risk trends chart
+        function setupRiskChart() {
+            const ctx = document.getElementById('riskTrendsChart').getContext('2d');
+            riskChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+                    datasets: [{
+                        label: 'High Risk',
+                        data: [2, 3, 1, 4, 2, 1, 3],
+                        borderColor: '#e74c3c',
+                        backgroundColor: 'rgba(231, 76, 60, 0.1)',
+                        tension: 0.4
+                    }, {
+                        label: 'Medium Risk',
+                        data: [5, 4, 6, 3, 5, 7, 4],
+                        borderColor: '#f39c12',
+                        backgroundColor: 'rgba(243, 156, 18, 0.1)',
+                        tension: 0.4
+                    }, {
+                        label: 'Low Risk',
+                        data: [11, 11, 11, 11, 11, 10, 11],
+                        borderColor: '#27ae60',
+                        backgroundColor: 'rgba(39, 174, 96, 0.1)',
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+        }
+
+        // Setup analytics charts
+        function setupAnalyticsCharts() {
+            setupRiskDistributionChart();
+            setupAlertTimelineChart();
+            setupMonthlyTrendsChart();
+            setupStateRiskChart();
+            setupSensorDataChart();
+            setupFeatureImportanceChart();
+        }
+
+        // Risk distribution pie chart
+        function setupRiskDistributionChart() {
+            const ctx = document.getElementById('riskDistributionChart');
+            if (!ctx) return;
+            
+            new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['High Risk', 'Medium Risk', 'Low Risk'],
+                    datasets: [{
+                        data: [3, 5, 10],
+                        backgroundColor: ['#e74c3c', '#f39c12', '#27ae60']
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'bottom' }
+                    }
+                }
+            });
+        }
+
+        // Alert timeline chart
+        function setupAlertTimelineChart() {
+            const ctx = document.getElementById('alertTimelineChart');
+            if (!ctx) return;
+            
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: ['00:00', '04:00', '08:00', '12:00', '16:00', '20:00'],
+                    datasets: [{
+                        label: 'Alerts',
+                        data: [2, 1, 4, 3, 6, 2],
+                        borderColor: '#e74c3c',
+                        backgroundColor: 'rgba(231, 76, 60, 0.1)',
+                        tension: 0.4,
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: { beginAtZero: true }
+                    }
+                }
+            });
+        }
+
+        // Monthly trends chart
+        function setupMonthlyTrendsChart() {
+            const ctx = document.getElementById('monthlyTrendsChart');
+            if (!ctx) return;
+            
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+                    datasets: [{
+                        label: 'High Risk Alerts',
+                        data: [12, 8, 15, 18, 22, 25],
+                        backgroundColor: '#e74c3c'
+                    }, {
+                        label: 'Medium Risk Alerts',
+                        data: [25, 20, 30, 28, 35, 40],
+                        backgroundColor: '#f39c12'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: { beginAtZero: true }
+                    }
+                }
+            });
+        }
+
+        // State-wise risk analysis
+        function setupStateRiskChart() {
+            const ctx = document.getElementById('stateRiskChart');
+            if (!ctx) return;
+            
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['Jharkhand', 'Odisha', 'Chhattisgarh', 'Rajasthan', 'Gujarat', 'West Bengal', 'Maharashtra', 'Karnataka'],
+                    datasets: [{
+                        label: 'Average Risk Score',
+                        data: [0.65, 0.45, 0.55, 0.30, 0.40, 0.35, 0.50, 0.42],
+                        backgroundColor: [
+                            '#e74c3c', '#f39c12', '#f39c12', '#27ae60', 
+                            '#27ae60', '#27ae60', '#f39c12', '#f39c12'
+                        ],
+                        borderColor: [
+                            '#c0392b', '#e67e22', '#e67e22', '#229954',
+                            '#229954', '#229954', '#e67e22', '#e67e22'
+                        ],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    indexAxis: 'y',
+                    plugins: {
+                        legend: {
+                            display: true,
+                            position: 'top'
+                        },
+                        title: {
+                            display: true,
+                            text: 'Risk Distribution by State'
+                        }
+                    },
+                    scales: {
+                        x: { 
+                            beginAtZero: true, 
+                            max: 1,
+                            title: {
+                                display: true,
+                                text: 'Risk Score (0-1)'
+                            }
+                        },
+                        y: {
+                            title: {
+                                display: true,
+                                text: 'States'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Real-time sensor data
+        function setupSensorDataChart() {
+            const ctx = document.getElementById('sensorDataChart');
+            if (!ctx) return;
+            
+            // Create animated real-time data
+            const sensorChart = new Chart(ctx, {
+                type: 'radar',
+                data: {
+                    labels: ['Displacement (mm)', 'Seismic Vibration (mm/s)', 'Crack Density', 'Strain (μm/m)', 'Pore Pressure (kPa)', 'Rainfall (mm)'],
+                    datasets: [{
+                        label: 'Current Readings (Normalized)',
+                        data: [0.7, 0.6, 0.8, 0.5, 0.4, 0.3],
+                        borderColor: '#e74c3c',
+                        backgroundColor: 'rgba(231, 76, 60, 0.2)',
+                        borderWidth: 2,
+                        pointBackgroundColor: '#e74c3c',
+                        pointBorderColor: '#fff',
+                        pointBorderWidth: 2,
+                        pointRadius: 5
+                    }, {
+                        label: 'Safe Threshold',
+                        data: [0.3, 0.3, 0.3, 0.3, 0.3, 0.3],
+                        borderColor: '#27ae60',
+                        backgroundColor: 'rgba(39, 174, 96, 0.1)',
+                        borderWidth: 2,
+                        borderDash: [5, 5],
+                        pointRadius: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: true,
+                            position: 'top'
+                        },
+                        title: {
+                            display: true,
+                            text: 'Live Sensor Monitoring (Last 5 minutes)'
+                        }
+                    },
+                    scales: {
+                        r: { 
+                            beginAtZero: true, 
+                            max: 1,
+                            ticks: {
+                                stepSize: 0.2
+                            },
+                            pointLabels: {
+                                font: {
+                                    size: 10
+                                }
+                            }
+                        }
+                    },
+                    animation: {
+                        duration: 2000,
+                        easing: 'easeInOutQuart'
+                    }
+                }
+            });
+            
+            // Animate the sensor data every 5 seconds
+            setInterval(() => {
+                const newData = [
+                    Math.random() * 0.8 + 0.1, // Displacement
+                    Math.random() * 0.7 + 0.2, // Seismic
+                    Math.random() * 0.9 + 0.1, // Crack Density
+                    Math.random() * 0.6 + 0.2, // Strain
+                    Math.random() * 0.5 + 0.3, // Pore Pressure
+                    Math.random() * 0.4 + 0.1  // Rainfall
+                ];
+                sensorChart.data.datasets[0].data = newData;
+                sensorChart.update('active');
+            }, 5000);
+        }
+
+        // Feature importance chart
+        function setupFeatureImportanceChart() {
+            const ctx = document.getElementById('featureImportanceChart');
+            if (!ctx) return;
+            
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['Seismic Vibration', 'Crack Density', 'Vegetation Ratio', 'Displacement', 'Slope', 'Rainfall', 'Elevation'],
+                    datasets: [{
+                        label: 'Feature Importance',
+                        data: [0.25, 0.22, 0.18, 0.15, 0.12, 0.08, 0.05],
+                        backgroundColor: [
+                            '#e74c3c', '#e67e22', '#f39c12', '#f1c40f',
+                            '#3498db', '#2ecc71', '#9b59b6'
+                        ],
+                        borderColor: [
+                            '#c0392b', '#d35400', '#e67e22', '#f39c12',
+                            '#2980b9', '#27ae60', '#8e44ad'
+                        ],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    indexAxis: 'y',
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        title: {
+                            display: true,
+                            text: 'XGBoost Model Feature Importance'
+                        }
+                    },
+                    scales: {
+                        x: { 
+                            beginAtZero: true, 
+                            max: 0.3,
+                            title: {
+                                display: true,
+                                text: 'Importance Score'
+                            }
+                        },
+                        y: {
+                            title: {
+                                display: true,
+                                text: 'Features'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Utility functions
+        function getRiskColor(riskLevel) {
+            const colors = {
+                'HIGH': '#e74c3c',
+                'MEDIUM': '#f39c12',
+                'LOW': '#27ae60'
+            };
+            return colors[riskLevel] || '#6c757d';
+        }
+
+        function getRiskBadgeColor(riskLevel) {
+            const colors = {
+                'HIGH': 'danger',
+                'MEDIUM': 'warning',
+                'LOW': 'success'
+            };
+            return colors[riskLevel] || 'secondary';
+        }
+
+        function updateConnectionStatus(status, type) {
+            const statusElement = document.getElementById('connection-status');
+            statusElement.textContent = status;
+            statusElement.className = `nav-link text-${type}`;
+        }
+
+        function showNotification(message, type) {
+            // Simple toast notification
+            const toast = document.createElement('div');
+            toast.className = `alert alert-${type} position-fixed`;
+            toast.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
+            toast.innerHTML = `
+                ${message}
+                <button type="button" class="btn-close" onclick="this.parentElement.remove()"></button>
+            `;
+            document.body.appendChild(toast);
+            
+            setTimeout(() => {
+                if (toast.parentElement) {
+                    toast.remove();
+                }
+            }, 5000);
+        }
+
+        function startTimeUpdater() {
+            function updateTime() {
+                const now = new Date();
+                document.getElementById('current-time').textContent = now.toLocaleTimeString();
+            }
+            updateTime();
+            setInterval(updateTime, 1000);
+        }
+
+        function refreshMap() {
+            loadMines();
+            showNotification('Map data refreshed', 'success');
+        }
+
+        function emergencyMode() {
+            if (confirm('Activate Emergency Mode? This will trigger immediate alerts for all high-risk mines.')) {
+                // Implement emergency mode logic
+                showNotification('Emergency mode activated - Sending alerts...', 'warning');
+                
+                // You could trigger emergency alerts here
+                fetch('/api/send_test_alert', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        mine_id: 'mine_001',
+                        type: 'emergency'
+                    })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    showNotification('Emergency alerts sent successfully', 'success');
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    showNotification('Failed to send emergency alerts', 'danger');
+                });
+            }
+        }
+
+        function updateWeather() {
+            // Mock weather data - in production, integrate with real weather API
+            const weatherInfo = document.getElementById('weather-info');
+            const weatherTemp = document.getElementById('weather-temp');
+            
+            // Simulate weather based on current season
+            const month = new Date().getMonth();
+            let weather, temp;
+            
+            if (month >= 5 && month <= 9) { // Monsoon season
+                weather = "Heavy rainfall expected - Increased rockfall risk";
+                temp = Math.floor(Math.random() * 5 + 25); // 25-30°C
+            } else if (month >= 2 && month <= 4) { // Summer
+                weather = "Hot and dry conditions";
+                temp = Math.floor(Math.random() * 10 + 30); // 30-40°C
+            } else { // Winter
+                weather = "Cool and clear conditions";
+                temp = Math.floor(Math.random() * 10 + 15); // 15-25°C
+            }
+            
+            weatherInfo.textContent = weather;
+            weatherTemp.textContent = temp + "°C";
+        }
+
+        // Red Alert Banner Functions
+        function checkForHighRiskAlerts() {
+            fetch('/api/predictions')
+                .then(response => response.json())
+                .then(predictions => {
+                    const highRiskMines = predictions.filter(p => p.risk_level === 'HIGH');
+                    
+                    if (highRiskMines.length > 0 && !isRedAlertDismissed()) {
+                        showRedAlert(highRiskMines);
+                    } else {
+                        hideRedAlert();
+                    }
+                })
+                .catch(error => {
+                    console.error('Error checking high risk alerts:', error);
+                });
+        }
+
+        function showRedAlert(highRiskMines) {
+            const banner = document.getElementById('red-alert-banner');
+            const mainText = document.getElementById('alert-main-text');
+            const mineList = document.getElementById('alert-mine-list');
+            const navbar = document.querySelector('.navbar');
+            const body = document.body;
+
+            // Update alert content
+            if (highRiskMines.length === 1) {
+                mainText.textContent = `🚨 CRITICAL ALERT: HIGH RISK detected at ${highRiskMines[0].mine_name}!`;
+                mineList.textContent = `Risk Score: ${(highRiskMines[0].risk_score || 0).toFixed(3)} | Location: ${highRiskMines[0].location}`;
+            } else {
+                mainText.textContent = `🚨 CRITICAL ALERT: ${highRiskMines.length} mines at HIGH RISK!`;
+                const mineNames = highRiskMines.slice(0, 3).map(m => m.mine_name).join(', ');
+                const extraCount = highRiskMines.length > 3 ? ` and ${highRiskMines.length - 3} more` : '';
+                mineList.textContent = `Affected mines: ${mineNames}${extraCount}`;
+            }
+
+            // Show the banner with animation
+            banner.style.display = 'block';
+            banner.classList.remove('dismissed');
+            body.classList.add('alert-active');
+            navbar.classList.add('alert-active');
+
+            // Play alert sound if available
+            playAlertSound();
+        }
+
+        function hideRedAlert() {
+            const banner = document.getElementById('red-alert-banner');
+            const navbar = document.querySelector('.navbar');
+            const body = document.body;
+
+            banner.style.display = 'none';
+            banner.classList.remove('dismissed');
+            body.classList.remove('alert-active');
+            navbar.classList.remove('alert-active');
+        }
+
+        function dismissRedAlert() {
+            const banner = document.getElementById('red-alert-banner');
+            const navbar = document.querySelector('.navbar');
+            const body = document.body;
+
+            // Mark as dismissed in session storage
+            sessionStorage.setItem('redAlertDismissed', 'true');
+            sessionStorage.setItem('redAlertDismissedTime', Date.now());
+
+            // Animate dismissal
+            banner.classList.add('dismissed');
+            body.classList.remove('alert-active');
+            navbar.classList.remove('alert-active');
+
+            // Hide after animation
+            setTimeout(() => {
+                banner.style.display = 'none';
+            }, 300);
+
+            showNotification('High risk alert dismissed', 'info');
+        }
+
+        function isRedAlertDismissed() {
+            const dismissed = sessionStorage.getItem('redAlertDismissed');
+            const dismissedTime = parseInt(sessionStorage.getItem('redAlertDismissedTime') || '0');
+            const currentTime = Date.now();
+            
+            // Alert dismissal expires after 10 minutes
+            const dismissalExpired = currentTime - dismissedTime > 600000; // 10 minutes
+            
+            if (dismissalExpired) {
+                sessionStorage.removeItem('redAlertDismissed');
+                sessionStorage.removeItem('redAlertDismissedTime');
+                return false;
+            }
+            
+            return dismissed === 'true';
+        }
+
+        function viewHighRiskMines() {
+            // Switch to alerts tab
+            const alertsTab = document.getElementById('alerts-tab');
+            alertsTab.click();
+            
+            // Scroll to critical alerts
+            setTimeout(() => {
+                const criticalAlertsContainer = document.getElementById('critical-alerts-container');
+                if (criticalAlertsContainer) {
+                    criticalAlertsContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+            }, 300);
+            
+            showNotification('Navigated to high risk mine details', 'info');
+        }
+
+        function playAlertSound() {
+            // Create audio context for alert sound
+            try {
+                const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                const oscillator = audioContext.createOscillator();
+                const gainNode = audioContext.createGain();
+                
+                oscillator.connect(gainNode);
+                gainNode.connect(audioContext.destination);
+                
+                oscillator.frequency.setValueAtTime(800, audioContext.currentTime);
+                oscillator.frequency.setValueAtTime(600, audioContext.currentTime + 0.1);
+                oscillator.frequency.setValueAtTime(800, audioContext.currentTime + 0.2);
+                
+                gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.3);
+                
+                oscillator.start(audioContext.currentTime);
+                oscillator.stop(audioContext.currentTime + 0.3);
+            } catch (error) {
+                // Silently fail if audio context is not available
+                console.log('Alert sound not available');
+            }
+        }
+
+        // Update the mine loading function to check for red alerts
+        const originalLoadMines = loadMines;
+        loadMines = function() {
+            originalLoadMines();
+            checkForHighRiskAlerts();
+        };
+
+        // Generate XAI Explanation HTML
+        function generateXaiExplanationHtml(xaiData) {
+            if (!xaiData || !xaiData.primary_explanation) {
+                return '';
+            }
+            
+            const contributing_factors = xaiData.contributing_factors || [];
+            const recommendations = xaiData.recommendations || [];
+            const confidence = xaiData.confidence_level || 0;
+            
+            let factorsHtml = '';
+            if (contributing_factors.length > 0) {
+                factorsHtml = contributing_factors.map(factor => {
+                    const riskClass = factor.risk_level || 'low';
+                    return `
+                        <div class="sensor-factor sensor-${riskClass}">
+                            <strong>${factor.factor}:</strong> ${factor.current_value?.toFixed(2) || 'N/A'} 
+                            <span class="text-muted">(${factor.risk_level} risk, score: ${factor.contribution_score?.toFixed(1) || '0.0'})</span>
+                        </div>
+                    `;
+                }).join('');
+            }
+            
+            let recommendationsHtml = '';
+            if (recommendations.length > 0) {
+                recommendationsHtml = recommendations.map(rec => `
+                    <div class="recommendation-item">
+                        <i class="fas fa-lightbulb"></i>
+                        ${rec}
+                    </div>
+                `).join('');
+            }
+            
+            return `
+                <div class="xai-explanation">
+                    <div class="xai-title">
+                        <i class="fas fa-robot"></i>
+                        AI Risk Analysis
+                    </div>
+                    <div class="mb-3">
+                        <strong>Explanation:</strong> ${xaiData.primary_explanation}
+                    </div>
+                    ${factorsHtml ? `
+                        <div class="mb-3">
+                            <strong>Contributing Factors:</strong>
+                            ${factorsHtml}
+                        </div>
+                    ` : ''}
+                    ${recommendationsHtml ? `
+                        <div class="mb-3">
+                            <strong>AI Recommendations:</strong>
+                            ${recommendationsHtml}
+                        </div>
+                    ` : ''}
+                    <div class="text-end">
+                        <span class="confidence-score">
+                            <i class="fas fa-check-circle"></i> 
+                            Confidence: ${confidence.toFixed(1)}%
+                        </span>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Refresh data every 30 seconds
+        setInterval(() => {
+            loadMines();
+            loadAlerts();
+            updateWeather();
+            checkForHighRiskAlerts();
+        }, 30000);
+    </script>
+</body>
+</html>

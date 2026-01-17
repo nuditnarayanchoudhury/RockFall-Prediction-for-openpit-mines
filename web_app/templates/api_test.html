@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>API Connection Test</title>
+    <style>
+        body {
+            font-family: 'Courier New', monospace;
+            max-width: 1200px;
+            margin: 20px auto;
+            padding: 20px;
+            background: #1a1a1a;
+            color: #00ff00;
+        }
+        .test-section {
+            background: #2d2d30;
+            border: 2px solid #00ff00;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+        }
+        .status {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+        }
+        .success {
+            background: #28a745;
+            color: white;
+        }
+        .error {
+            background: #dc3545;
+            color: white;
+        }
+        .info {
+            background: #17a2b8;
+            color: white;
+        }
+        pre {
+            background: #000;
+            color: #0f0;
+            padding: 15px;
+            border-radius: 5px;
+            overflow-x: auto;
+            max-height: 400px;
+        }
+        button {
+            background: #00ff00;
+            color: #000;
+            border: none;
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            border-radius: 5px;
+            margin: 5px;
+        }
+        button:hover {
+            background: #00cc00;
+        }
+        h1, h2 {
+            color: #00ff00;
+            text-shadow: 0 0 10px #00ff00;
+        }
+    </style>
+</head>
+<body>
+    <h1>🔍 API Connection Diagnostic Tool</h1>
+    
+    <div class="test-section">
+        <h2>1. Test /api/predictions Endpoint</h2>
+        <button onclick="testPredictions()">Run Test</button>
+        <button onclick="location.reload()">Reset</button>
+        <div id="predictions-status"></div>
+        <pre id="predictions-output"></pre>
+    </div>
+    
+    <div class="test-section">
+        <h2>2. Test /api/mines Endpoint</h2>
+        <button onclick="testMines()">Run Test</button>
+        <div id="mines-status"></div>
+        <pre id="mines-output"></pre>
+    </div>
+    
+    <div class="test-section">
+        <h2>3. Test /api/alerts Endpoint</h2>
+        <button onclick="testAlerts()">Run Test</button>
+        <div id="alerts-status"></div>
+        <pre id="alerts-output"></pre>
+    </div>
+    
+    <div class="test-section">
+        <h2>4. Network Diagnostics</h2>
+        <button onclick="testNetwork()">Run Network Test</button>
+        <div id="network-status"></div>
+        <pre id="network-output"></pre>
+    </div>
+    
+    <div class="test-section">
+        <h2>5. Map Marker Test</h2>
+        <button onclick="testMapMarkers()">Test Marker Creation</button>
+        <div id="map-status"></div>
+        <pre id="map-output"></pre>
+    </div>
+
+    <script>
+        // Test predictions endpoint
+        async function testPredictions() {
+            const statusDiv = document.getElementById('predictions-status');
+            const outputDiv = document.getElementById('predictions-output');
+            
+            statusDiv.innerHTML = '<div class="status info">Testing /api/predictions...</div>';
+            outputDiv.textContent = 'Loading...';
+            
+            try {
+                const startTime = Date.now();
+                const response = await fetch('/api/predictions');
+                const endTime = Date.now();
+                
+                statusDiv.innerHTML = `
+                    <div class="status ${response.ok ? 'success' : 'error'}">
+                        Status: ${response.status} ${response.statusText}<br>
+                        Response Time: ${endTime - startTime}ms
+                    </div>
+                `;
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    outputDiv.textContent = JSON.stringify(data, null, 2);
+                    
+                    // Additional analysis
+                    statusDiv.innerHTML += `
+                        <div class="status success">
+                            ✓ Success! Found ${data.length} mines<br>
+                            Risk Distribution:<br>
+                            - HIGH: ${data.filter(m => m.risk_level === 'HIGH').length}<br>
+                            - MEDIUM: ${data.filter(m => m.risk_level === 'MEDIUM').length}<br>
+                            - LOW: ${data.filter(m => m.risk_level === 'LOW').length}<br>
+                            <br>
+                            Sample Coordinates:<br>
+                            ${data.slice(0, 3).map(m => `- ${m.mine_name}: [${m.coordinates}]`).join('<br>')}
+                        </div>
+                    `;
+                } else {
+                    outputDiv.textContent = await response.text();
+                }
+            } catch (error) {
+                statusDiv.innerHTML = `<div class="status error">Error: ${error.message}</div>`;
+                outputDiv.textContent = error.stack;
+            }
+        }
+        
+        // Test mines endpoint
+        async function testMines() {
+            const statusDiv = document.getElementById('mines-status');
+            const outputDiv = document.getElementById('mines-output');
+            
+            statusDiv.innerHTML = '<div class="status info">Testing /api/mines...</div>';
+            outputDiv.textContent = 'Loading...';
+            
+            try {
+                const response = await fetch('/api/mines');
+                
+                statusDiv.innerHTML = `
+                    <div class="status ${response.ok ? 'success' : 'error'}">
+                        Status: ${response.status} ${response.statusText}
+                    </div>
+                `;
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    outputDiv.textContent = JSON.stringify(data, null, 2);
+                    
+                    statusDiv.innerHTML += `
+                        <div class="status success">
+                            ✓ Success! Found ${data.length} mines
+                        </div>
+                    `;
+                } else {
+                    outputDiv.textContent = await response.text();
+                }
+            } catch (error) {
+                statusDiv.innerHTML = `<div class="status error">Error: ${error.message}</div>`;
+                outputDiv.textContent = error.stack;
+            }
+        }
+        
+        // Test alerts endpoint
+        async function testAlerts() {
+            const statusDiv = document.getElementById('alerts-status');
+            const outputDiv = document.getElementById('alerts-output');
+            
+            statusDiv.innerHTML = '<div class="status info">Testing /api/alerts...</div>';
+            outputDiv.textContent = 'Loading...';
+            
+            try {
+                const response = await fetch('/api/alerts');
+                
+                statusDiv.innerHTML = `
+                    <div class="status ${response.ok ? 'success' : 'error'}">
+                        Status: ${response.status} ${response.statusText}
+                    </div>
+                `;
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    outputDiv.textContent = JSON.stringify(data, null, 2);
+                    
+                    const alerts = data.alerts || data;
+                    statusDiv.innerHTML += `
+                        <div class="status success">
+                            ✓ Success! Found ${alerts.length} alerts
+                        </div>
+                    `;
+                } else {
+                    outputDiv.textContent = await response.text();
+                }
+            } catch (error) {
+                statusDiv.innerHTML = `<div class="status error">Error: ${error.message}</div>`;
+                outputDiv.textContent = error.stack;
+            }
+        }
+        
+        // Test network connectivity
+        async function testNetwork() {
+            const statusDiv = document.getElementById('network-status');
+            const outputDiv = document.getElementById('network-output');
+            
+            const tests = {
+                'Window Location': window.location.href,
+                'Origin': window.location.origin,
+                'Protocol': window.location.protocol,
+                'Host': window.location.host,
+                'User Agent': navigator.userAgent,
+                'Online Status': navigator.onLine ? 'Online' : 'Offline',
+                'Cookies Enabled': navigator.cookieEnabled ? 'Yes' : 'No'
+            };
+            
+            let output = 'Network Information:\n\n';
+            for (const [key, value] of Object.entries(tests)) {
+                output += `${key}: ${value}\n`;
+            }
+            
+            // Test fetch availability
+            output += '\n=== Fetch API Test ===\n';
+            output += `Fetch available: ${typeof fetch !== 'undefined' ? 'Yes' : 'No'}\n`;
+            
+            // Check for CORS issues
+            output += '\n=== CORS Check ===\n';
+            try {
+                const response = await fetch('/api/status', { method: 'HEAD' });
+                output += `Status endpoint accessible: ${response.ok ? 'Yes' : 'No'}\n`;
+                output += `CORS headers: ${response.headers.get('access-control-allow-origin') || 'None'}\n`;
+            } catch (e) {
+                output += `CORS Error: ${e.message}\n`;
+            }
+            
+            statusDiv.innerHTML = '<div class="status success">Network test completed</div>';
+            outputDiv.textContent = output;
+        }
+        
+        // Test map marker creation
+        async function testMapMarkers() {
+            const statusDiv = document.getElementById('map-status');
+            const outputDiv = document.getElementById('map-output');
+            
+            statusDiv.innerHTML = '<div class="status info">Testing map marker creation...</div>';
+            
+            try {
+                const response = await fetch('/api/predictions');
+                const predictions = await response.json();
+                
+                let output = 'Map Marker Test Results:\n\n';
+                output += `Total predictions: ${predictions.length}\n\n`;
+                
+                // Simulate marker creation
+                let validMarkers = 0;
+                let invalidMarkers = 0;
+                
+                predictions.forEach((pred, index) => {
+                    const coords = pred.coordinates;
+                    const isValid = Array.isArray(coords) && 
+                                  coords.length === 2 && 
+                                  typeof coords[0] === 'number' && 
+                                  typeof coords[1] === 'number' &&
+                                  coords[0] >= -90 && coords[0] <= 90 &&
+                                  coords[1] >= -180 && coords[1] <= 180;
+                    
+                    if (isValid) {
+                        validMarkers++;
+                        if (index < 5) {
+                            output += `✓ ${pred.mine_name}: [${coords[0]}, ${coords[1]}] - ${pred.risk_level}\n`;
+                        }
+                    } else {
+                        invalidMarkers++;
+                        output += `✗ ${pred.mine_name}: Invalid coordinates ${JSON.stringify(coords)}\n`;
+                    }
+                });
+                
+                output += `\nSummary:\n`;
+                output += `Valid markers: ${validMarkers}\n`;
+                output += `Invalid markers: ${invalidMarkers}\n`;
+                
+                if (invalidMarkers === 0) {
+                    statusDiv.innerHTML = '<div class="status success">✓ All markers would be created successfully!</div>';
+                } else {
+                    statusDiv.innerHTML = `<div class="status error">✗ Found ${invalidMarkers} invalid markers</div>`;
+                }
+                
+                outputDiv.textContent = output;
+            } catch (error) {
+                statusDiv.innerHTML = `<div class="status error">Error: ${error.message}</div>`;
+                outputDiv.textContent = error.stack;
+            }
+        }
+        
+        // Auto-run tests on page load
+        window.addEventListener('DOMContentLoaded', () => {
+            console.log('API Test Page Loaded');
+            console.log('Click buttons to run tests');
+        });
+    </script>
+</body>
+</html>

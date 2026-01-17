@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SMS Test Dashboard - Disaster Management System</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 10px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+        
+        h1 {
+            color: #2c3e50;
+            text-align: center;
+            margin-bottom: 30px;
+            border-bottom: 3px solid #3498db;
+            padding-bottom: 15px;
+        }
+        
+        .test-section {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+            border-left: 4px solid #3498db;
+        }
+        
+        .test-section h3 {
+            color: #2c3e50;
+            margin-top: 0;
+        }
+        
+        .btn {
+            background: #3498db;
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 5px;
+            transition: all 0.3s ease;
+        }
+        
+        .btn:hover {
+            background: #2980b9;
+            transform: translateY(-2px);
+        }
+        
+        .btn.success {
+            background: #27ae60;
+        }
+        
+        .btn.danger {
+            background: #e74c3c;
+        }
+        
+        .btn:disabled {
+            background: #bdc3c7;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .result {
+            background: #ecf0f1;
+            border-radius: 5px;
+            padding: 15px;
+            margin: 10px 0;
+            font-family: monospace;
+            white-space: pre-wrap;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        
+        .result.success {
+            background: #d5f4e6;
+            border-left: 4px solid #27ae60;
+        }
+        
+        .result.error {
+            background: #fadbd8;
+            border-left: 4px solid #e74c3c;
+        }
+        
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
+        
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #3498db;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 10px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .status {
+            text-align: center;
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+        
+        .phone-info {
+            background: #e8f4fd;
+            border: 1px solid #3498db;
+            border-radius: 5px;
+            padding: 15px;
+            margin: 15px 0;
+        }
+        
+        .phone-info h4 {
+            margin: 0 0 10px 0;
+            color: #2c3e50;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🚨 SMS Test Dashboard</h1>
+        <p style="text-align: center; color: #7f8c8d; font-size: 18px;">
+            Test SMS functionality for the Disaster Management System
+        </p>
+        
+        <div class="phone-info">
+            <h4>📱 Configured Phone Numbers</h4>
+            <p><strong>Primary:</strong> +917735776771</p>
+            <p><strong>Secondary:</strong> +919078280686</p>
+            <p><strong>Twilio Phone:</strong> +16893993073</p>
+        </div>
+        
+        <div class="test-section">
+            <h3>🔧 Direct SMS Test</h3>
+            <p>Send a simple test message to the primary verified number.</p>
+            <button class="btn" onclick="testDirectSMS()">Send Direct SMS Test</button>
+            <div id="directSMSResult" class="result" style="display: none;"></div>
+        </div>
+        
+        <div class="test-section">
+            <h3>📱📱 Multi-Number SMS Test</h3>
+            <p>Send test messages to both verified numbers simultaneously.</p>
+            <button class="btn" onclick="testSMSAlerts()">Test SMS to All Numbers</button>
+            <div id="smsAlertsResult" class="result" style="display: none;"></div>
+        </div>
+        
+        <div class="test-section">
+            <h3>🚨 Alert System Test</h3>
+            <p>Test the complete alert system with realistic mining data.</p>
+            <button class="btn" onclick="testFullAlert()">Send Full Alert Test</button>
+            <div id="fullAlertResult" class="result" style="display: none;"></div>
+        </div>
+        
+        <div class="loading" id="loadingIndicator">
+            <div class="spinner"></div>
+            <p>Sending SMS...</p>
+        </div>
+        
+        <div id="generalStatus" class="status" style="display: none;"></div>
+        
+        <div style="text-align: center; margin-top: 30px; color: #7f8c8d;">
+            <p>💡 <strong>Note:</strong> Check your phones for received messages. Messages may take 1-2 minutes to arrive.</p>
+            <p>🔍 If messages don't arrive, check the Twilio console for delivery status.</p>
+        </div>
+    </div>
+
+    <script>
+        function showLoading() {
+            document.getElementById('loadingIndicator').style.display = 'block';
+            // Disable all buttons
+            const buttons = document.querySelectorAll('.btn');
+            buttons.forEach(btn => btn.disabled = true);
+        }
+        
+        function hideLoading() {
+            document.getElementById('loadingIndicator').style.display = 'none';
+            // Re-enable all buttons
+            const buttons = document.querySelectorAll('.btn');
+            buttons.forEach(btn => btn.disabled = false);
+        }
+        
+        function showResult(elementId, content, success = true) {
+            const element = document.getElementById(elementId);
+            element.style.display = 'block';
+            element.className = 'result ' + (success ? 'success' : 'error');
+            element.textContent = content;
+        }
+        
+        function showStatus(message, success = true) {
+            const element = document.getElementById('generalStatus');
+            element.style.display = 'block';
+            element.className = 'status ' + (success ? 'success' : 'error');
+            element.style.background = success ? '#d5f4e6' : '#fadbd8';
+            element.style.color = success ? '#27ae60' : '#e74c3c';
+            element.textContent = message;
+            
+            // Auto-hide after 5 seconds
+            setTimeout(() => {
+                element.style.display = 'none';
+            }, 5000);
+        }
+        
+        async function testDirectSMS() {
+            showLoading();
+            try {
+                const response = await fetch('/test_direct_sms', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    }
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    showResult('directSMSResult', 
+                        `✅ Direct SMS sent successfully!
+📱 To: ${data.to}
+📞 From: ${data.from}  
+🆔 Message SID: ${data.sms_sid}
+💬 Content: ${data.content}`, true);
+                    showStatus('✅ Direct SMS test completed successfully!', true);
+                } else {
+                    showResult('directSMSResult', 
+                        `❌ Direct SMS test failed:
+Error: ${data.message}
+Type: ${data.error_type || 'Unknown'}`, false);
+                    showStatus('❌ Direct SMS test failed', false);
+                }
+            } catch (error) {
+                showResult('directSMSResult', `❌ Network error: ${error.message}`, false);
+                showStatus('❌ Network error occurred', false);
+            } finally {
+                hideLoading();
+            }
+        }
+        
+        async function testSMSAlerts() {
+            showLoading();
+            try {
+                const response = await fetch('/test_sms_alerts', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    }
+                });
+                
+                const data = await response.json();
+                
+                let resultText = `📊 Multi-number SMS test results:
+${data.message}
+
+Summary:
+✅ Successful: ${data.summary.successful}
+❌ Failed: ${data.summary.failed}
+📱 Total: ${data.summary.total}
+
+Details:`;
+                
+                data.results.forEach((result, index) => {
+                    resultText += `\n\n${index + 1}. Phone: ${result.phone}`;
+                    if (result.success) {
+                        resultText += `\n   ✅ Success - SID: ${result.sms_sid}`;
+                        resultText += `\n   📊 Status: ${result.status}`;
+                    } else {
+                        resultText += `\n   ❌ Failed: ${result.error}`;
+                    }
+                });
+                
+                showResult('smsAlertsResult', resultText, data.success);
+                showStatus(
+                    data.success ? '✅ Multi-number SMS test completed!' : '❌ Some SMS tests failed', 
+                    data.success
+                );
+            } catch (error) {
+                showResult('smsAlertsResult', `❌ Network error: ${error.message}`, false);
+                showStatus('❌ Network error occurred', false);
+            } finally {
+                hideLoading();
+            }
+        }
+        
+        async function testFullAlert() {
+            showLoading();
+            try {
+                const response = await fetch('/api/test_sms', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        mine_id: 'mine_001',
+                        phone: '+917735776771'
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    showResult('fullAlertResult', 
+                        `✅ Full alert system test successful!
+🆔 Message SID: ${data.sms_sid}
+📱 To: ${data.to}
+📝 Content Preview: ${data.content_preview}`, true);
+                    showStatus('✅ Full alert test completed successfully!', true);
+                } else {
+                    showResult('fullAlertResult', 
+                        `❌ Full alert test failed:
+Error: ${data.error}
+Type: ${data.error_type || 'Unknown'}`, false);
+                    showStatus('❌ Full alert test failed', false);
+                }
+            } catch (error) {
+                showResult('fullAlertResult', `❌ Network error: ${error.message}`, false);
+                showStatus('❌ Network error occurred', false);
+            } finally {
+                hideLoading();
+            }
+        }
+        
+        // Auto-refresh status on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            showStatus('📱 SMS Test Dashboard Ready - Click any button to start testing!', true);
+        });
+    </script>
+</body>
+</html>
