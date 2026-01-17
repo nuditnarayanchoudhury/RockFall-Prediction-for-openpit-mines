@@ -64,6 +64,43 @@ During inference, the system:
 
 A **fallback geological risk logic** is included to ensure graceful degradation if the trained model is unavailable.
 
+
+
+
+
+---
+
+## 📈 Impact & Use Cases
+
+- Early warning system for **rockfall-prone zones**
+- Decision support for **mine safety officers**
+- Risk-aware **operational planning**
+- Research platform for **AI in mining safety**
+
+---
+
+## 📂 Dataset
+
+Dataset used for training and evaluation:  
+**https://drive.google.com/drive/folders/1rpohGmnZ4MsZd-Gxtwc3yrewVzRVGI87**
+
+---
+
+## 🏆 Smart India Hackathon 2024
+
+This project was developed as part of **Smart India Hackathon 2024**, focusing on **AI-driven mining safety solutions** with emphasis on reliability, interpretability, and real-world deployment readiness.
+
+---
+
+## 📄 License
+
+Developed under **Smart India Hackathon (SIH) 2024** guidelines for academic and innovation purposes.
+
+---
+
+**Built for safer mines using Machine Learning and Explainable AI**
+
+## 📁 Project Structure
 SIH_PROJECT/
 │
 ├── README.md                         # Project overview and setup guide
@@ -112,42 +149,6 @@ SIH_PROJECT/
     ├── TECHNICAL_ARCHITECTURE.md
     ├── COMPREHENSIVE_USER_GUIDE.md
     └── PROJECT_OVERVIEW.md
-
-
-
----
-
-## 📈 Impact & Use Cases
-
-- Early warning system for **rockfall-prone zones**
-- Decision support for **mine safety officers**
-- Risk-aware **operational planning**
-- Research platform for **AI in mining safety**
-
----
-
-## 📂 Dataset
-
-Dataset used for training and evaluation:  
-**https://drive.google.com/drive/folders/1rpohGmnZ4MsZd-Gxtwc3yrewVzRVGI87**
-
----
-
-## 🏆 Smart India Hackathon 2024
-
-This project was developed as part of **Smart India Hackathon 2024**, focusing on **AI-driven mining safety solutions** with emphasis on reliability, interpretability, and real-world deployment readiness.
-
----
-
-## 📄 License
-
-Developed under **Smart India Hackathon (SIH) 2024** guidelines for academic and innovation purposes.
-
----
-
-**Built for safer mines using Machine Learning and Explainable AI**
-
-## 📁 Project Structure
 
 
 
